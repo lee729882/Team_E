@@ -2,9 +2,10 @@ package Core;
 import java.awt.Point;
 
 public interface GameConstants {
+	 // 화면 크기 관련 상수
     public static final int SCREEN_WIDTH = 1200;
     public static final int SCREEN_HEIGHT = 714;
-
+    // 배경 크기 관련 상수
     public static final int BACKGROUND_WIDTH = 1200;
     public static final int BACKGROUND_HEIGHT = 675;
 
@@ -12,12 +13,13 @@ public interface GameConstants {
     public static final String PNG_EXT = ".png";
     public static final String BACKGROUND_PATH = "../Assets/Backgrounds/";
 
+    // 왼쪽 팀 스프라이트 경로
     public static final String LEFT_MOVE_PATH = "../Assets/Sprites/Left/Move/";
     public static final String LEFT_ATTACK_PATH = "../Assets/Sprites/Left/Attack/";
     public static final String LEFT_TOWER_PATH = "../Assets/Sprites/Left/Tower/";
     public static final String LEFT_TURRET_PATH = "../Assets/Sprites/Left/Turret/";
     public static final String LEFT_PROJECTILE_PATH = "../Assets/Sprites/Left/Projectiles/";
-
+    // 오른쪽 팀 스프라이트 경로
     public static final String RIGHT_MOVE_PATH = "../Assets/Sprites/Right/Move/";
     public static final String RIGHT_ATTACK_PATH = "../Assets/Sprites/Right/Attack/";
     public static final String RIGHT_TOWER_PATH = "../Assets/Sprites/Right/Tower/";
@@ -25,19 +27,22 @@ public interface GameConstants {
     public static final String RIGHT_PROJECTILE_PATH = "../Assets/Sprites/Right/Projectiles/";
 
     // Menu
-    public static final String PAUSE_STRING = "SPACE";
-    public static final String EVOLUTION = "EVO.";
-    public static final String VOLUME_STRING = "G";
+    public static final String PAUSE_STRING = "SPACE";// 일시정지 버튼
+    public static final String EVOLUTION = "EVO.";// 진화 관련 텍스트
+    public static final String VOLUME_STRING = "G";// 볼륨 버튼
     public static final String LEFT_EVOLVE_STRING = "Press A To Evolve!";
     public static final String RIGHT_EVOLVE_STRING = "Press L to Evolve!";
-    public static final String CREATURE_CREATION_ICONS_PATH = "../Assets/Menu/CreatureCreationIcons/";
-    public static final String TURRET_CREATION_ICONS_PATH = "../Assets/Menu/TurretCreationIcons/";
-    public static final String MAIN_ICONS_PATH = "../Assets/Menu/MainIcons/";
-    public static final int ICON_WIDTH = 25;
-    public static final int ICON_HEIGHT = 25;
-    public static final int ICON_SEPARATOR = 20;
-    public static final int NUMBER_SEPARATOR = 22;
-    public static final int NUM_CC_ICONS = 4;
+    public static final String CREATURE_CREATION_ICONS_PATH = "../Assets/Menu/CreatureCreationIcons/";// 생명체 아이콘 경로
+    public static final String TURRET_CREATION_ICONS_PATH = "../Assets/Menu/TurretCreationIcons/";// 터렛 아이콘 경로
+    public static final String MAIN_ICONS_PATH = "../Assets/Menu/MainIcons/";// 주요 아이콘 경로
+    
+    // 아이콘 크기 및 간격
+    public static final int ICON_WIDTH = 25; // 아이콘 너비
+    public static final int ICON_HEIGHT = 25; // 아이콘 높이
+    public static final int ICON_SEPARATOR = 20; // 아이콘 간격
+    public static final int NUMBER_SEPARATOR = 22; // 번호 간격
+    
+    public static final int NUM_CC_ICONS = 4; 
     public static final int NUM_CC_INFO = 5;
     public static final int NUM_MENU_ICONS = 9;
     public static final int HEALTH = 1;
@@ -48,22 +53,24 @@ public interface GameConstants {
     public static final int VOLUME_OFF = 7;
     public static final int VOLUME_ON = 8;
 
+    // 왼쪽 팀 아이콘 및 정보 위치
     public static final Point LEFT_FIRST_ICON_POS = new Point(8, 50);
     public static final Point LEFT_FIRST_CC_POS = new Point(65, 50);
 
+    // 오른쪽 팀 아이콘 및 정보 위치
     public static final Point RIGHT_FIRST_ICON_POS = new Point(SCREEN_WIDTH - ICON_WIDTH - 30, 50);
     public static final Point RIGHT_FIRST_CC_POS = new Point(945, 50);
 
     // Misc
-    public static final int MAX_IN_QUEUE = 4;
-    public static final int STARTING_TURRETS = 0;
-    public static final int STARTING_EVOLUTION = 0;
-    public static final int NUM_EVOLUTIONS = 3;
+    public static final int MAX_IN_QUEUE = 4; // 대기열 최대 크기
+    public static final int STARTING_TURRETS = 0; // 초기 터렛 개수
+    public static final int STARTING_EVOLUTION = 0; // 초기 진화 단계
+    public static final int NUM_EVOLUTIONS = 3; // 최대 진화 단계
     public static final int EVOLUTION_ONE = 1;
     public static final int EVOLUTION_TWO = 2;
     public static final int EVOLUTION_THREE = 3;
-    public static final int EVOLVE_COST = 1000;
-    public static final int EVOLVE_MULTIPLIER = 3;
+    public static final int EVOLVE_COST = 1000; // 진화 비용
+    public static final int EVOLVE_MULTIPLIER = 3; // 진화 배율
 
     public static final int NUM_DIFFERENT_PROJECTILES = 3;
     public static final int NUM_DIFFERENT_CREATURES = 4;
