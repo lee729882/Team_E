@@ -19,20 +19,22 @@ import Core.GameFrame;
 import Core.GameKeyListener;
 import Entities.Player;
 
+//플레이 패널(PlayPanel) 클래스
+//- 게임의 메인 플레이 화면을 구성하며, 게임 로직과 그래픽을 처리
 public class PlayPanel extends JPanel implements GameConstants, EntityConstants {
 
-    private Player playerOne, playerTwo;
-    private BufferedImage background;
-    private boolean playingMusic = true;
-    private boolean gameOverFirst = false;
-    private boolean gameOverSecond = false;
-    private GameFrame gameFrame;
-    private JPanel cardsPanel;
-    private CardLayout cardLayout;
-    private String firstName, secondName;
-    private boolean gamePaused = false;
+	private Player playerOne, playerTwo; // 두 플레이어 객체
+    private BufferedImage background; // 배경 이미지
+    private boolean playingMusic = true; // 음악 재생 여부
+    private boolean gameOverFirst = false; // 첫 번째 플레이어 게임 오버 여부
+    private boolean gameOverSecond = false; // 두 번째 플레이어 게임 오버 여부
+    private GameFrame gameFrame; // 게임 프레임 참조
+    private JPanel cardsPanel; // 카드 레이아웃의 패널
+    private CardLayout cardLayout; // 카드 레이아웃
+    private String firstName, secondName; // 두 플레이어의 이름
+    private boolean gamePaused = false; // 게임 일시정지 여부
 
-    // image arrays
+    // 이미지 배열 (생성 및 공격 스프라이트, 투사체, 타워 및 터렛 이미지)
     private BufferedImage[][][] leftMove = new BufferedImage[NUM_DIFFERENT_CREATURES][NUM_EVOLUTIONS][NUM_MOVE_SPRITES];
     private BufferedImage[][][] leftAttack = new BufferedImage[NUM_DIFFERENT_CREATURES][NUM_EVOLUTIONS][NUM_ATTACK_SPRITES];
     private BufferedImage[][] leftProjectiles = new BufferedImage[NUM_EVOLUTIONS][NUM_DIFFERENT_PROJECTILES];
@@ -45,18 +47,19 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
     private BufferedImage[] rightTower = new BufferedImage[NUM_TOWER_TURRET_SPRITES];
     private BufferedImage[] rightTurret = new BufferedImage[NUM_TOWER_TURRET_SPRITES];
 
-    private BufferedImage[] menuItems = new BufferedImage[NUM_MENU_ICONS];
-    private BufferedImage[][] creatureCreationIcons = new BufferedImage[NUM_DIFFERENT_CREATURES][NUM_EVOLUTIONS];
-    static AudioInputStream audioStream;
-    static Clip music;
+    private BufferedImage[] menuItems = new BufferedImage[NUM_MENU_ICONS]; // 메뉴 아이템 이미지
+    private BufferedImage[][] creatureCreationIcons = new BufferedImage[NUM_DIFFERENT_CREATURES][NUM_EVOLUTIONS]; // 유닛 생성 아이콘
+    static AudioInputStream audioStream; // 배경 음악 스트림
+    static Clip music; // 배경 음악 클립
 
+    // 생성자: 패널 초기화
     public PlayPanel() {
-        setLayout(null);
-        this.setFocusable(true);
-        this.requestFocusInWindow();
-        importImages();
+    	setLayout(null); // 레이아웃 매니저 사용하지 않음
+        this.setFocusable(true); // 포커스를 받을 수 있도록 설정
+        this.requestFocusInWindow(); // 초기 포커스 요청
+        importImages(); // 이미지 로드
         try {
-            background = ImageIO.read(this.getClass().getResource(BACKGROUND_PATH + "Game.jpg"));
+            background = ImageIO.read(this.getClass().getResource(BACKGROUND_PATH + "Game.jpg")); // 배경 이미지 로드
         } catch (Exception e) {
         }
 
@@ -67,30 +70,36 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
         } catch (Exception e) {
         }
 
+        // 플레이어 이름 가져오기
         firstName = LoginPanel.firstLoginField.getText();
         secondName = LoginPanel.secondLoginField.getText();
 
+        // 두 플레이어 객체 생성
         this.playerOne = new Player(LEFT_TEAM, firstName, leftMove, leftAttack, leftProjectiles, leftTower, leftTurret);
-        this.playerTwo = new Player(RIGHT_TEAM, secondName, rightMove, rightAttack, rightProjectiles, rightTower,
-                rightTurret);
+        this.playerTwo = new Player(RIGHT_TEAM, secondName, rightMove, rightAttack, rightProjectiles, rightTower, rightTurret);
+
+        // 키 리스너 추가
         GameKeyListener gameKeyListener = new GameKeyListener(playerOne, playerTwo, this);
         addKeyListener(gameKeyListener);
     }
 
+    // 게임 실행 메서드
     public void runGame(PlayPanel pp) {
-        playMusic();
-        gameFrame = (GameFrame) SwingUtilities.getWindowAncestor(this);
-        cardsPanel = gameFrame.getCardsPanel();
-        cardLayout = (CardLayout) cardsPanel.getLayout();
+    	playMusic(); // 음악 재생
+        gameFrame = (GameFrame) SwingUtilities.getWindowAncestor(this); // 게임 프레임 가져오기
+        cardsPanel = gameFrame.getCardsPanel(); // 카드 패널 가져오기
+        cardLayout = (CardLayout) cardsPanel.getLayout(); // 카드 레이아웃 가져오기
 
+        // 페인트 타이머 (화면 갱신)
         final Timer paintTimer = new Timer(PAINT_DELAY, new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                repaint();
+                repaint(); // 패널 다시 그리기
             }
         });
         paintTimer.start();
 
+        // 소환 타이머 (생성 큐에서 유닛 소환)
         final Timer summonTimer = new Timer(SUMMON_DELAY, new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -104,6 +113,7 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
         });
         summonTimer.start();
 
+        // 골드 증가 타이머
         final Timer goldTimer = new Timer(GOLD_DELAY, new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -116,8 +126,10 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
         goldTimer.start();
     }
 
+    // 이미지 로드 메서드
     public void importImages() {
         try {
+        	// 유닛 스프라이트 및 아이콘 로드
             for (int row = 0; row < NUM_DIFFERENT_CREATURES; row++) {
                 for (int evolution = 0; evolution < NUM_EVOLUTIONS; evolution++) {
                     this.creatureCreationIcons[row][evolution] = ImageIO.read(this.getClass()
@@ -140,6 +152,7 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
                 }
             }
 
+            // 타워 및 터렛 이미지 로드
             for (int i = 0; i < NUM_TOWER_TURRET_SPRITES; i++) {
                 this.leftTower[i] = ImageIO.read(this.getClass().getResource(LEFT_TOWER_PATH + i + PNG_EXT));
                 this.leftTurret[i] = ImageIO.read(this.getClass().getResource(LEFT_TURRET_PATH + i + PNG_EXT));
@@ -147,7 +160,8 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
                 this.rightTower[i] = ImageIO.read(this.getClass().getResource(RIGHT_TOWER_PATH + i + PNG_EXT));
                 this.rightTurret[i] = ImageIO.read(this.getClass().getResource(RIGHT_TURRET_PATH + i + PNG_EXT));
             }
-
+            
+            // 투사체 이미지 로드
             for (int evolution = 0; evolution < NUM_EVOLUTIONS; evolution++) {
                 for (int projectile = 0; projectile < NUM_DIFFERENT_PROJECTILES; projectile++) {
                     this.leftProjectiles[evolution][projectile] = ImageIO.read(
@@ -157,6 +171,7 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
                 }
             }
 
+            // 메뉴 아이템 로드
             for (int i = 0; i < NUM_MENU_ICONS; i++) {
                 this.menuItems[i] = ImageIO.read(this.getClass().getResource(MAIN_ICONS_PATH + i + PNG_EXT));
             }
@@ -165,14 +180,16 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
             System.out.println("error loading image " + e.getMessage());
         }
     }
-
+    
+    // 게임 그리기
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         if (!this.gamePaused) {
-            // draw background and menu
+            // 게임 진행 중
             g.drawImage(background, 0, 0, null);
 
+            // 게임 오버 및 유닛 관리 로직
             playerOne.automate(playerTwo);
             gameOverSecond = playerTwo.checkGameOver();
             if (gameOverSecond) {
@@ -251,11 +268,13 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
             }
 
         } else {
+        	// 일시정지 화면
             g.setFont(new Font("Tahoma", Font.BOLD, 100));
             g.drawString("PAUSED", SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2);
         }
     }
-
+    	
+    // 음악 재생
     public void playMusic() {
         music.setFramePosition(0);
         music.start();

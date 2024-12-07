@@ -11,22 +11,24 @@ import java.awt.Font;
 
 public class Player implements GameConstants, EntityConstants {
 
-	private Tower tower;
-	private int teamSide;
-	private LinkedList<Creature> creatures = new LinkedList<Creature>();
-	private Queue<Creature> summonQueue = new LinkedList<Creature>();
-	private String userName;
-	private double gold;
+	private Tower tower; // 플레이어의 타워 객체
+    private int teamSide; // 팀 방향 (LEFT_TEAM 또는 RIGHT_TEAM)
+    private LinkedList<Creature> creatures = new LinkedList<Creature>(); // 현재 생성된 생명체 목록
+    private Queue<Creature> summonQueue = new LinkedList<Creature>(); // 소환 대기열
+    private String userName; // 플레이어 이름
+    private double gold; // 플레이어의 현재 골드
 
-	private int currentEvolution = 0;
-	private int evolutionCost;
+    private int currentEvolution = 0; // 현재 진화 단계
+    private int evolutionCost; // 다음 진화에 필요한 비용
 
-	private BufferedImage[][][] moveSprites;
-	private BufferedImage[][][] attackSprites;
-	private BufferedImage[][] projectileSprites;
-	private BufferedImage[] towerSprites;
-	private BufferedImage[] turretSprites;
+    // 스프라이트 (애니메이션 및 시각적 요소)
+    private BufferedImage[][][] moveSprites; // 이동 스프라이트
+    private BufferedImage[][][] attackSprites; // 공격 스프라이트
+    private BufferedImage[][] projectileSprites; // 투사체 스프라이트
+    private BufferedImage[] towerSprites; // 타워 스프라이트
+    private BufferedImage[] turretSprites; // 터렛 스프라이트
 
+	// 생성자: 팀, 이름, 스프라이트 정보 초기화
 	public Player(int team, String name, BufferedImage[][][] move, BufferedImage[][][] attack,
 			BufferedImage[][] projectiles, BufferedImage[] tower, BufferedImage[] turret) {
 		this.teamSide = team;
@@ -36,22 +38,24 @@ public class Player implements GameConstants, EntityConstants {
 		this.projectileSprites = projectiles;
 		this.towerSprites = tower;
 		this.turretSprites = turret;
-		this.gold = START_GOLD;
-		this.evolutionCost = EVOLVE_COST;
+		this.gold = START_GOLD; // 시작 골드 설정
+		this.evolutionCost = EVOLVE_COST; // 초기 진화 비용 설정
 		this.tower = new Tower(team, TOWER_TYPE, this.currentEvolution, this.towerSprites, this.turretSprites,
 				projectileSprites[TURRET_PROJECTILES]);
-		this.currentEvolution = STARTING_EVOLUTION;
+		this.currentEvolution = STARTING_EVOLUTION; // 초기 진화 단계 설정
 	}
 
+	// 생명체를 소환 대기열에 추가
 	public void queueCreature(int cost, int type) {
-		if (this.summonQueue.size() < MAX_CREATURES_IN_QUEUE) {
-			this.gold -= cost;
+		if (this.summonQueue.size() < MAX_CREATURES_IN_QUEUE) { // 대기열 제한 확인
+			this.gold -= cost; // 골드 차감
 			Creature creature = null;
 			BufferedImage projectileSprite = null;
 			if (type == FIRST_TYPE || type == THIRD_TYPE) {
 				creature = new Creature(teamSide, type, currentEvolution, moveSprites[type][currentEvolution],
 						attackSprites[type][currentEvolution]);
 			} else {
+				// 원거리형 생명체 생성
 				if (type == SECOND_TYPE) {
 					projectileSprite = this.projectileSprites[SECOND_PROJECTILES][this.currentEvolution];
 				} else {
@@ -60,64 +64,73 @@ public class Player implements GameConstants, EntityConstants {
 				creature = new Ranged(teamSide, type, currentEvolution, moveSprites[type][currentEvolution],
 						attackSprites[type][currentEvolution], projectileSprite);
 			}
-			this.summonQueue.add(creature);
+			this.summonQueue.add(creature); // 소환 대기열에 추가
 		}
 	}
 
+	// 대기열에서 생명체를 소환
 	public void summonCreature() {
-		this.creatures.add(this.summonQueue.poll());
+		this.creatures.add(this.summonQueue.poll()); // 대기열에서 제거 후 리스트에 추가
 	}
 
+	// 진화를 시도
 	public boolean evolve() {
-		if (this.currentEvolution == 2) {
+		if (this.currentEvolution == 2) { // 최대 진화 단계 확인
 			return false;
 		}
-		this.currentEvolution++;
-		this.gold -= this.evolutionCost;
-		this.evolutionCost = this.currentEvolution * EVOLVE_MULTIPLIER * EVOLVE_COST;
-		this.tower.setCurrentSprite(towerSprites[this.currentEvolution]);
+		this.currentEvolution++; // 진화 단계 증가
+		this.gold -= this.evolutionCost; // 골드 차감
+		this.evolutionCost = this.currentEvolution * EVOLVE_MULTIPLIER * EVOLVE_COST; // 다음 진화 비용 계산
+		this.tower.setCurrentSprite(towerSprites[this.currentEvolution]); // 타워 스프라이트 업데이트
 		return true;
 	}
 
+	// 터렛 구매
 	public void buyTurret(int cost, int spot) {
-		this.gold -= cost;
-		this.tower.addTurret(spot);
+		this.gold -= cost; // 골드 차감
+		this.tower.addTurret(spot); // 터렛 추가
 	}
 
+	// 터렛 판매
 	public void sellTurret(int amount, int spot) {
-		this.gold += amount;
-		this.tower.getTurrets().set(spot, null);
+		this.gold += amount; // 골드 추가
+		this.tower.getTurrets().set(spot, null); // 해당 터렛 제거
 	}
 
+	// 죽은 생명체 제거 및 처치 보상 획득
 	public int removeDeadCreatures() {
 		int goldGained = 0;
 		for (int i = HEAD; i < this.creatures.size(); i++) {
-			if (this.creatures.get(i).getHealth() <= 0) {
-				Creature creature = this.creatures.remove(i);
-				goldGained += creature.getGoldFromKill();
+			if (this.creatures.get(i).getHealth() <= 0) { // 체력이 0 이하인 생명체 확인
+				Creature creature = this.creatures.remove(i); // 제거
+				goldGained += creature.getGoldFromKill(); // 처치 보상 골드 추가
 			}
 		}
 		return goldGained;
 	}
 
+	// 게임 오버 상태 확인
 	public boolean checkGameOver() {
-		if (this.tower.getHealth() <= 0) {
+		if (this.tower.getHealth() <= 0) { // 타워 체력이 0 이하인지 확인
 			return true;
 		} else {
 			return false;
 		}
 	}
 
+	// 골드 획득 (고정량)
 	public void gainGold() {
 		this.gold += GOLD_GAINED;
 	}
 
+	// 생명체와 터렛의 동작 자동화
 	public void gainGold(int amount) {
 		this.gold += amount;
 	}
 
-	// automate troop movements, turret functions, etc
+	// 생명체와 터렛의 동작 자동화
 	public void automate(Player other) {
+		// 생명체와 터렛 동작 처리
 		Creature creature;
 		Turret turret;
 		Destructible enemyAhead;
@@ -246,7 +259,9 @@ public class Player implements GameConstants, EntityConstants {
 		}
 	}
 
+	//플레이어의 시각적 요소를 화면에 그리기
 	public void draw(Graphics g) {
+		// 타워와 생명체 그리기 (좌측/우측 팀에 따른 표시 포함)
 		this.tower.draw(g);
 		for (Creature creature : this.creatures) {
 			creature.draw(g);
@@ -315,6 +330,7 @@ public class Player implements GameConstants, EntityConstants {
 	}
 
 	// ---------------------------------------
+	 // Getter 메서드
 	public Tower getTower() {
 		return this.tower;
 	}
