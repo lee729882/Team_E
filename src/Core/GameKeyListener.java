@@ -29,6 +29,13 @@ public class GameKeyListener implements KeyListener, GameConstants, EntityConsta
         int cost;
         Turret turret;
 
+        // playerOne이 null이 아닌지 확인
+        if (this.playerOne != null) {
+            // playerOne이 null이 아니면 getCurrentEvolution() 호출
+            this.playerOne.getCurrentEvolution();
+        } else {
+            System.out.println("Error: playerOne is not initialized.");
+        }
         switch (keyCode) {
             // Pause Game
             case KeyEvent.VK_SPACE:

@@ -153,14 +153,23 @@ public class Player implements GameConstants, EntityConstants {
         }
     }
 
-    // 현재 골드 반환
-    public int getGold() {
-        return (int) this.gold;
+    // 골드 추가 메서드
+    public void addGold(int amount) {
+        this.gold += amount;
+        // 골드가 음수가 되지 않도록 보장
+        if (this.gold < 0) {
+            this.gold = 0;
+        }
+    }
+    
+    // 골드 설정 메서드
+    public void setGold(int initialGold) {
+        this.gold = initialGold;
+        System.out.println("초기 골드 설정: " + this.gold);
     }
 
-    // 골드 설정 (테스트나 초기화용)
-    public void setGold(int gold) {
-        this.gold = gold;
+    public int getGold() {
+        return (int) this.gold;
     }
 
 	// automate troop movements, turret functions, etc

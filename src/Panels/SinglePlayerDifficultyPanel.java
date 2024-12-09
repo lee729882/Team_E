@@ -1,6 +1,7 @@
 package Panels;
 
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
@@ -9,14 +10,18 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import Core.GameConstants;
+import Entities.EnemyAI;
 
-public class ModeSelectionPanel extends JPanel implements GameConstants {
+public class SinglePlayerDifficultyPanel extends JPanel implements GameConstants {
 
-    private JButton singlePlayerButton;
-    private JButton multiplayerButton;
-    private JButton settingsButton; // 설명 버튼
+    // 버튼 멤버 변수 선언
+    private JButton easyButton;
+    private JButton normalButton;
+    private JButton hardButton;
 
-    public ModeSelectionPanel() {
+    private EnemyAI enemyAI;
+
+    public SinglePlayerDifficultyPanel(ActionListener difficultyListener) {
         setLayout(null);
 
         // 패널 크기 설정
@@ -29,10 +34,10 @@ public class ModeSelectionPanel extends JPanel implements GameConstants {
         backgroundLabel.setIcon(background);
         backgroundLabel.setBounds(0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
 
-        // 버튼 추가
-        singlePlayerButton = createRoundedButton("싱글 플레이");
-        multiplayerButton = createRoundedButton("멀티 플레이");
-        settingsButton = createRoundedButton("설명");
+        // 버튼 생성
+        easyButton = createRoundedButton("쉬움");
+        normalButton = createRoundedButton("보통");
+        hardButton = createRoundedButton("어려움");
 
         // 버튼 크기와 간격
         int buttonWidth = 250;
@@ -40,40 +45,33 @@ public class ModeSelectionPanel extends JPanel implements GameConstants {
         int buttonSpacing = 20;
 
         // 버튼 위치 계산 (아래 중앙 정렬)
-        int centerX = (BACKGROUND_WIDTH - buttonWidth) / 2;
+        int centerX = (BACKGROUND_WIDTH - buttonWidth) / 2 ;
         int baseY = BACKGROUND_HEIGHT - (3 * buttonHeight + 2 * buttonSpacing + 50); // 아래쪽에서 50px 위에 배치
 
-        singlePlayerButton.setBounds(centerX, baseY, buttonWidth, buttonHeight);
-        multiplayerButton.setBounds(centerX, baseY + buttonHeight + buttonSpacing, buttonWidth, buttonHeight);
-        settingsButton.setBounds(centerX, baseY + 2 * (buttonHeight + buttonSpacing), buttonWidth, buttonHeight);
+        easyButton.setBounds(centerX, baseY, buttonWidth, buttonHeight);
+        normalButton.setBounds(centerX, baseY + buttonHeight + buttonSpacing, buttonWidth, buttonHeight);
+        hardButton.setBounds(centerX, baseY + 2 * (buttonHeight + buttonSpacing), buttonWidth, buttonHeight);
+        
+        // ActionCommand 설정
+        easyButton.setActionCommand("easy");
+        normalButton.setActionCommand("normal");
+        hardButton.setActionCommand("hard");
 
-        // 설명 버튼 클릭 시 이벤트 리스너 추가
-        settingsButton.addActionListener(e -> {
-            // 설명 버튼 클릭 시, rulesPanel로 전환
-            CardLayout cl = (CardLayout) getParent().getLayout();
-            cl.show(getParent(), "rules"); // 'rules' 패널로 이동
-        });
-
+        // ActionListener 추가
+        easyButton.addActionListener(difficultyListener);
+        normalButton.addActionListener(difficultyListener);
+        hardButton.addActionListener(difficultyListener);
+        
         // 컴포넌트 추가
-        add(singlePlayerButton);
-        add(multiplayerButton);
-        add(settingsButton);
+        add(easyButton);
+        add(normalButton);
+        add(hardButton);
         add(backgroundLabel); // 배경을 맨 마지막에 추가
 
         // 배경을 맨 아래로 설정
         setComponentZOrder(backgroundLabel, getComponentCount() - 1);
     }
-
-    // 싱글 플레이 버튼 반환 메서드
-    public JButton getSinglePlayerButton() {
-        return singlePlayerButton;
-    }
-
-    // 멀티 플레이 버튼 반환 메서드
-    public JButton getMultiplayerButton() {
-        return multiplayerButton;
-    }
-
+    
     // 둥근 버튼 스타일링 메서드
     private JButton createRoundedButton(String text) {
         JButton button = new JButton(text) {
@@ -124,5 +122,18 @@ public class ModeSelectionPanel extends JPanel implements GameConstants {
         button.setBorder(new EmptyBorder(10, 10, 10, 10)); // 여백 설정
 
         return button;
+    }
+
+    // 각 버튼에 접근할 수 있도록 메서드 제공
+    public JButton getEasyButton() {
+        return easyButton;
+    }
+
+    public JButton getNormalButton() {
+        return normalButton;
+    }
+
+    public JButton getHardButton() {
+        return hardButton;
     }
 }

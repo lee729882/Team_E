@@ -14,6 +14,16 @@ public class EnemyAI {
     private Random random;
     private double difficultyMultiplier; // 난이도 계수
     private int maxUnitCost; // 소환 가능한 유닛의 최대 비용
+    private double summonProbability; // 유닛 소환 확률
+    private double evolveProbability; // 진화 확률
+    
+    // 난이도 별 초기 골드와 시간에 따른 골드 획득량 설정
+    private int initialGold;
+    private int goldPerInterval; // 시간당 획득할 골드 양
+    private long lastGoldUpdateTime; // 마지막 골드 업데이트 시간
+    
+    private long summonCooldown; // 유닛 소환 쿨타임
+    private long lastSummonTime; // 마지막 소환 시간
     
     // 기본 생성자: 난이도를 설정하지 않으면 기본 값 사용
     public EnemyAI(Player aiPlayer, Player opponentPlayer) {
@@ -26,14 +36,36 @@ public class EnemyAI {
         this.random = new Random();
         this.difficultyMultiplier = difficultyMultiplier;
 
-        // 난이도에 따라 최대 소환 유닛 비용 설정
-        if (difficultyMultiplier <= 0.5) { // 쉬움
-            this.maxUnitCost = 50;
-        } else if (difficultyMultiplier <= 1.0) { // 보통
-            this.maxUnitCost = 100;
-        } else { // 어려움
-            this.maxUnitCost = Integer.MAX_VALUE; // 제한 없음
+     // 쉬움 난이도 (AI가 약함)
+        if (difficultyMultiplier == 0.5) {
+            this.maxUnitCost = 300;  // 기본 유닛 비용
+            this.summonProbability = 0.3; // 유닛 소환 확률 낮음
+            this.evolveProbability = 0.3; // 진화 확률 낮음
+            this.initialGold = 100;  // 적은 초기 골드
+            this.summonCooldown = 10000; // 10초 (쉬움에서 더 긴 쿨타임)
+
+        } 
+        // 보통 난이도
+        else if (difficultyMultiplier == 1.0) {
+            this.maxUnitCost = 400; // 기본 유닛 비용
+            this.summonProbability = 0.5; // 유닛 소환 확률 보통
+            this.evolveProbability = 0.5; // 진화 확률 보통
+            this.initialGold = 200;  // 보통 난이도에서 기본 초기 골드
+            this.summonCooldown = 7000; // 7초 (보통에서 평균적인 쿨타임)
+
+        } 
+        // 어려움 난이도 (AI가 강함)
+        else {
+            this.maxUnitCost = 500;  // 유닛 비용 높음
+            this.summonProbability = 0.8; // 유닛 소환 확률 높음
+            this.evolveProbability = 0.9; // 진화 확률 높음
+            this.initialGold = 500;  // 많은 초기 골드
+            this.summonCooldown = 5000; // 5초 (어려움에서 더 짧은 쿨타임)
+
         }
+        aiPlayer.setGold(this.initialGold);  // Player 객체에 초기 골드 설정
+        this.lastSummonTime = System.currentTimeMillis(); // 소환 시작 시간 설정
+
     }
 
     public Player getAiPlayer() {
@@ -122,31 +154,48 @@ public class EnemyAI {
     private int previousTargetCost = -1;
 
     private void manageUnits() {
-        // 유닛 소환 확률 계산
-        double summonProbability = 0.5 * difficultyMultiplier;
+        // 유닛 소환 확률 계산 (난이도에 따라 다르게 설정)
+        double summonProbability = this.summonProbability; // 난이도에 맞는 소환 확률
 
         // 목표 비용 초기화 (처음 설정되었거나 대기열이 가득 찬 경우)
         if (targetUnitCost == -1 || aiPlayer.getSummonQueue().size() >= GameConstants.MAX_CREATURES_IN_QUEUE) {
+            // maxUnitCost 이하로 목표 비용을 설정
             targetUnitCost = GameConstants.UNIT_COSTS[random.nextInt(GameConstants.NUM_DIFFERENT_CREATURES)];
+
+            // 목표 비용이 maxUnitCost보다 크다면 maxUnitCost로 설정
+            if (targetUnitCost > maxUnitCost) {
+                targetUnitCost = maxUnitCost;
+            }
+
             logIfStateChanged("AI 새 목표 비용 설정: " + targetUnitCost);
         }
 
         // 상태 변경 확인
         logIfStateChanged("AI 골드: " + aiPlayer.getGold() + ", 목표 비용: " + targetUnitCost);
 
-        // 목표 비용에 도달한 경우 유닛 소환
-        if (aiPlayer.getGold() >= targetUnitCost) {
-            int unitType = findUnitTypeByCost(targetUnitCost);
+        // 유닛 소환 쿨타임 확인
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastSummonTime >= summonCooldown) {  // 쿨타임이 지나면 소환 가능
+            // 목표 비용에 도달한 경우 유닛 소환 (소환 확률 고려)
+            if (aiPlayer.getGold() >= targetUnitCost) {
+                int unitType = findUnitTypeByCost(targetUnitCost);
 
-            if (unitType != -1) {
-                aiPlayer.queueCreature(targetUnitCost, unitType);
-                logIfStateChanged("AI가 유닛을 소환 대기열에 추가: 타입 " + unitType + ", 남은 골드: " + aiPlayer.getGold());
-                targetUnitCost = -1; // 목표 비용 초기화
+                // 소환 확률을 고려하여 유닛을 소환
+                if (unitType != -1 && random.nextDouble() < summonProbability) {
+                    aiPlayer.queueCreature(targetUnitCost, unitType);
+                    logIfStateChanged("AI가 유닛을 소환 대기열에 추가: 타입 " + unitType + ", 남은 골드: " + aiPlayer.getGold());
+                    targetUnitCost = -1; // 목표 비용 초기화
+                    lastSummonTime = currentTime; // 마지막 소환 시간 업데이트
+                } else {
+                    logIfStateChanged("AI가 유닛을 소환하지 않음: 소환 확률 미달");
+                }
             }
+        } else {
+            logIfStateChanged("AI가 쿨타임 동안 대기 중입니다.");
         }
 
-        // 진화 로직
-        if (aiPlayer.getGold() >= aiPlayer.getEvolutionCost() && random.nextDouble() < 0.2) {
+        // 진화 로직: AI가 진화할 수 있는 경우 진화 확률에 따라 진화
+        if (aiPlayer.getGold() >= aiPlayer.getEvolutionCost() && random.nextDouble() < evolveProbability) {
             aiPlayer.evolve();
             logIfStateChanged("AI가 진화했습니다. 현재 진화 단계: " + aiPlayer.getCurrentEvolution());
         }
@@ -157,6 +206,9 @@ public class EnemyAI {
             logIfStateChanged("AI가 유닛을 소환.");
         }
     }
+
+
+
 
     private void logIfStateChanged(String message) {
         int currentGold = aiPlayer.getGold();

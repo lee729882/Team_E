@@ -7,6 +7,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import Panels.ModeSelectionPanel;
 import Panels.PlayPanel;
 import Panels.RulesPanel;
 import Panels.SinglePlayerGame;
@@ -70,6 +71,16 @@ public class ButtonListener implements ActionListener {
         } else if (this.source.equals("quit")) {
             gameFrame.dispose();
         }
+        // 게임 오버 후 "Menu" 버튼 클릭 시 modelSelectionPanel로 전환
+        else if (this.source.equals("OK - menu")) {
+            // GameOverPanel에서 "OK - menu" 버튼 클릭 시
+            ModeSelectionPanel modelSelectionPanel = new ModeSelectionPanel();
+            cardsPanel.add(modelSelectionPanel, "modelSelectionPanel");
+            layout.show(cardsPanel, "modelSelectionPanel"); // modelSelectionPanel 화면으로 전환
+    	} else if (this.source.equals("quit")) {
+        // 게임 창 종료
+        System.exit(0); // 창 종료
     }
+    }
+   }
 
-}

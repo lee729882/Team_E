@@ -26,7 +26,7 @@ public class GameOverPanel extends JPanel implements GameConstants {
         winnerLabel.setForeground(Color.WHITE);
 
         JButton menuButton = new JButton("Menu");
-        menuButton.setActionCommand("OK");
+        menuButton.setActionCommand("OK - menu"); 
         JButton quitButton = new JButton("Quit");
         quitButton.setActionCommand("quit");
 

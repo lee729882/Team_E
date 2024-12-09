@@ -55,11 +55,36 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
     static AudioInputStream audioStream;
     static Clip music;
 
+    private String difficulty;
+    private double enemyAIDifficultyFactor;
+    
+    private GameKeyListener keyListener;
+
     public SinglePlayerGame() {
         setLayout(null);
-        this.setFocusable(true);
-        this.requestFocusInWindow();
-        importImages();
+        setFocusable(true);
+        requestFocusInWindow();
+        
+        importImages();  // 이미지 로드
+
+        // playerOne과 playerTwo 초기화
+        firstName = "Player";
+        this.playerOne = new Player(LEFT_TEAM, firstName, leftMove, leftAttack, leftProjectiles, leftTower, leftTurret);
+        this.playerTwo = new Player(RIGHT_TEAM, secondName, rightMove, rightAttack, rightProjectiles, rightTower, rightTurret);
+
+        // EnemyAI 초기화
+        this.enemyAI = new EnemyAI(playerTwo, playerOne, 0.5); // 쉬움 난이도
+
+        // GameKeyListener 추가
+        GameKeyListener gameKeyListener = new GameKeyListener(playerOne, null, this, true);
+        addKeyListener(gameKeyListener);
+
+        addHierarchyListener(e -> {
+            if (isShowing()) {
+                requestFocusInWindow();
+            }
+        });
+
         try {
             background = ImageIO.read(this.getClass().getResource(BACKGROUND_PATH + "Game.jpg"));
         } catch (Exception e) {
@@ -75,16 +100,38 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
                 System.out.println("Error loading background music: " + e.getMessage());
             }
         }
-
-        firstName = "Player";
-        this.playerOne = new Player(LEFT_TEAM, firstName, leftMove, leftAttack, leftProjectiles, leftTower, leftTurret);
-        this.playerTwo = new Player(RIGHT_TEAM, secondName, rightMove, rightAttack, rightProjectiles, rightTower, rightTurret);
-        this.enemyAI = new EnemyAI(playerTwo, playerOne, 0.5); // 쉬움 난이도
-
-        GameKeyListener gameKeyListener = new GameKeyListener(playerOne, playerTwo, this, false);
-        addKeyListener(gameKeyListener);
     }
 
+
+    
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty.toLowerCase();
+        double initialGold = 0.0;
+
+        switch (this.difficulty) {
+            case "easy":
+                enemyAIDifficultyFactor = 0.5; // 쉬움: 낮은 공격력 및 소환 빈도
+                initialGold = 200.0; // 쉬움 난이도의 초기 골드
+                break;
+            case "normal":
+                enemyAIDifficultyFactor = 1.0; // 보통: 기본값                
+                initialGold = 300.0; // 보통 난이도의 초기 골드
+
+                break;
+            case "hard":
+                enemyAIDifficultyFactor = 1.5; // 어려움: 높은 공격력 및 소환 빈도
+                initialGold = 500.0; // 어려움 난이도의 초기 골드
+                break;
+            default:
+                enemyAIDifficultyFactor = 1.0; // 기본값
+                initialGold = 300.0; // 기본값
+                break;
+        }
+
+        // EnemyAI 인스턴스 초기화
+        this.enemyAI = new EnemyAI(playerTwo, playerOne, enemyAIDifficultyFactor);
+    }
+    
     public void setPlayerNames(String firstName) {
         this.firstName = firstName;
         this.playerOne = new Player(LEFT_TEAM, firstName, leftMove, leftAttack, leftProjectiles, leftTower, leftTurret);
@@ -183,7 +230,12 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
+        
+        // 포커스가 없으면 다시 요청
+        if (!isFocusOwner()) {
+            requestFocusInWindow();
+        }
+        
         if (!this.gamePaused) {
             g.drawImage(background, 0, 0, null);
 
