@@ -24,6 +24,7 @@ public class Ranged extends Creature {
     public void attack(Destructible target) {
         this.setCurrentTarget(target);
         Point projPos;
+        
         if (this.getCurrentAttackIndex() == LAST_ATTACK_SPRITE) {
             this.setCurrentAttackIndex(FIRST_SPRITE);
         } else {
@@ -47,9 +48,10 @@ public class Ranged extends Creature {
     }
 
     public void draw(Graphics g) {
-        g.drawImage(this.getCurrentSprite(), this.getPosition().x, this.getPosition().y, null);
-        for (int i = 0; i < this.projectiles.size(); i++) {
-            this.projectiles.get(i).draw(g);
+        super.draw(g);
+
+        for (Projectile projectile : this.projectiles) {
+            projectile.draw(g);
         }
     }
 

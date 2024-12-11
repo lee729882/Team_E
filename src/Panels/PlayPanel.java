@@ -199,6 +199,7 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
             // Automate player actions and check game over
             playerOne.automate(playerTwo);
             gameOverSecond = playerTwo.checkGameOver();
+            
             if (gameOverSecond) {
                 JPanel overPanel = new GameOverPanel(firstName);
                 this.cardsPanel.add(overPanel, "over");
@@ -221,45 +222,6 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
             // Draw player units
             playerOne.draw(g);
             playerTwo.draw(g);
-
-            // Draw health bars for playerOne's units
-            g.setColor(Color.RED);
-            for (Creature creature : playerOne.getCreatures()) {
-                if (creature != null && creature.getHealth() > 0) {
-                    int healthBarWidth = 50;
-                    int healthBarHeight = 5;
-                    int xOffset = (creature.getWidth() - healthBarWidth) / 2;
-                    int yOffset = -10;
-
-                    // Background of health bar
-                    g.fillRect(creature.getPosition().x + xOffset, creature.getPosition().y + yOffset, healthBarWidth, healthBarHeight);
-
-                    // Foreground (current health)
-                    g.setColor(Color.GREEN);
-                    int currentHealthBarWidth = (int) ((double) creature.getHealth() / creature.getMaxHealth() * healthBarWidth);
-                    g.fillRect(creature.getPosition().x + xOffset, creature.getPosition().y + yOffset, currentHealthBarWidth, healthBarHeight);
-                    g.setColor(Color.RED); // Reset color for the next health bar
-                }
-            }
-
-            // Draw health bars for playerTwo's units
-            for (Creature creature : playerTwo.getCreatures()) {
-                if (creature != null && creature.getHealth() > 0) {
-                    int healthBarWidth = 50;
-                    int healthBarHeight = 5;
-                    int xOffset = (creature.getWidth() - healthBarWidth) / 2;
-                    int yOffset = -10;
-
-                    // Background of health bar
-                    g.fillRect(creature.getPosition().x + xOffset, creature.getPosition().y + yOffset, healthBarWidth, healthBarHeight);
-
-                    // Foreground (current health)
-                    g.setColor(Color.GREEN);
-                    int currentHealthBarWidth = (int) ((double) creature.getHealth() / creature.getMaxHealth() * healthBarWidth);
-                    g.fillRect(creature.getPosition().x + xOffset, creature.getPosition().y + yOffset, currentHealthBarWidth, healthBarHeight);
-                    g.setColor(Color.RED); // Reset color for the next health bar
-                }
-            }
 
             // Draw menu items and UI
             for (int i = 0; i < NUM_CC_INFO; i++) {

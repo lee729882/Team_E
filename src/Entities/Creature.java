@@ -83,15 +83,36 @@ public class Creature extends Destructible {
 
     public void attack(Destructible target) {
         if (target != null && !target.isDestroyed()) {
-            target.takeDamage(this.damage);
-            this.timeStartedAttack = System.currentTimeMillis();
+            // 공격 모션 시작
+            if (this.currentActivity != ATTACK_ACTIVITY) {
+                this.currentActivity = ATTACK_ACTIVITY;
+                this.currentAttackIndex = 0; // 공격 모션 초기화
+                this.setCurrentSprite(this.attackSprites[this.currentAttackIndex]);
+            }
+
+            // 공격 애니메이션 진행
+            if (this.currentAttackIndex < this.attackSprites.length - 1) {
+                this.currentAttackIndex++;
+            } else {
+                // 공격 완료, 데미지 적용
+                target.takeDamage(this.damage);
+                this.timeStartedAttack = System.currentTimeMillis();
+                this.currentActivity = IDLE_ACTIVITY; // 다시 기본 상태로 전환
+                this.setCurrentSprite(this.moveSprites[FIRST_SPRITE]);
+            }
+
+            // 디버깅 출력
+            System.out.println("[DEBUG] Melee attack by " + this.getType() +
+                               ", Target: " + target + 
+                               ", Damage: " + this.damage);
 
             if (target.isDestroyed()) {
-                System.out.println(target.getClass().getSimpleName() + " destroyed.");
-                this.currentTarget = null; // 타겟 초기화
+                System.out.println("[DEBUG] Target destroyed.");
+                this.currentTarget = null;
             }
         }
     }
+
 
     public void move() {
         Point previousPosition = new Point(this.getPosition());
@@ -137,36 +158,51 @@ public class Creature extends Destructible {
     public void draw(Graphics g) {
         // 유닛이 체력이 없을 경우 그리지 않음
         if (this.getHealth() <= 0) {
-            System.out.println("Skipping drawing for unit with 0 health at position: " + this.getPosition());
             return;
         }
 
-        // 디버깅 메시지: 유닛의 위치와 체력 정보
-        // System.out.println("Drawing unit at position: " + this.getPosition() + ", Health: " + this.getHealth() + "/" + this.getMaxHealth());
+        if (this.currentSprite == null) {
+            System.err.println("[ERROR] Cannot draw unit. Sprite is null for unit at position: " + this.getPosition());
+            return;
+        }
 
-        // 유닛 이미지 그리기
-        g.drawImage(this.currentSprite, this.getPosition().x, this.getPosition().y, null);
+        // 이미지 높이에 따라 조정 (기준선 유지)
+        int groundLevel = 560; // 바닥 기준선
+        int adjustedY = groundLevel - this.currentSprite.getHeight(null);
 
-        // 체력바 그리기 로직
-        int healthBarWidth = 50; // 체력바의 너비
-        int healthBarHeight = 5; // 체력바의 높이
-        int xOffset = (this.getWidth() - healthBarWidth) / 2; // 유닛 중앙 정렬
-        int yOffset = -10; // 유닛 상단에 배치
+        // 현재 활동 상태에 따른 스프라이트 선택
+        if (this.currentActivity == ATTACK_ACTIVITY) {
+            g.drawImage(this.attackSprites[this.currentAttackIndex], this.getPosition().x, adjustedY, null);
+        } else {
+            g.drawImage(this.moveSprites[this.currentMoveIndex], this.getPosition().x, adjustedY, null);
+        }
+
+
+        // 체력바 크기 및 위치 설정
+        int healthBarWidth = (int) (this.currentSprite.getWidth(null) * 0.8); // 유닛 너비의 80%
+        int healthBarHeight = 5; // 고정 높이
+        int xOffset = (this.currentSprite.getWidth(null) - healthBarWidth) / 2;
+        int yOffset = -healthBarHeight - 10;
+
 
         // 체력바 배경 (빨간색)
         g.setColor(Color.RED);
-        g.fillRect(this.getPosition().x + xOffset, this.getPosition().y + yOffset, healthBarWidth, healthBarHeight);
+        g.fillRect(
+            this.getPosition().x + xOffset,
+            adjustedY + yOffset,
+            healthBarWidth,
+            healthBarHeight
+        );
 
         // 체력바 현재 체력 (녹색)
         g.setColor(Color.GREEN);
         int currentHealthBarWidth = (int) ((double) this.getHealth() / this.getMaxHealth() * healthBarWidth);
-        g.fillRect(this.getPosition().x + xOffset, this.getPosition().y + yOffset, currentHealthBarWidth, healthBarHeight);
-
-        // 디버깅 메시지: 체력바 상태
-        /* System.out.println("Health bar drawn at: (" 
-            + (this.getPosition().x + xOffset) + ", " 
-            + (this.getPosition().y + yOffset) + "), Current Width: " 
-            + currentHealthBarWidth + "/" + healthBarWidth); */
+        g.fillRect(
+            this.getPosition().x + xOffset,
+            adjustedY + yOffset,
+            currentHealthBarWidth,
+            healthBarHeight
+        );
     }
 
 
@@ -270,4 +306,5 @@ public class Creature extends Destructible {
             this.setCurrentSprite(this.getMoveSprites()[HEAD]);
         }
     }
+    
 }

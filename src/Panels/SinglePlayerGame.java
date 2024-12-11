@@ -267,56 +267,29 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
             playerOne.draw(g); // 플레이어 유닛 그리기
             playerTwo.draw(g); // AI 유닛도 움직인 후 그리기
 
-            // 유닛 체력바 표시 (Player One)
-            g.setColor(Color.RED);
-            for (Creature creature : playerOne.getCreatures()) {
-                if (creature != null && creature.getHealth() > 0) {
-                    int healthBarWidth = 50;
-                    int healthBarHeight = 5;
-                    int xOffset = (creature.getWidth() - healthBarWidth) / 2;
-                    int yOffset = -10;
-
-                    // 체력바 배경
-                    g.fillRect(creature.getPosition().x + xOffset, creature.getPosition().y + yOffset, healthBarWidth, healthBarHeight);
-
-                    // 체력바 현재 체력
-                    g.setColor(Color.GREEN);
-                    int currentHealthBarWidth = (int) ((double) creature.getHealth() / creature.getMaxHealth() * healthBarWidth);
-                    g.fillRect(creature.getPosition().x + xOffset, creature.getPosition().y + yOffset, currentHealthBarWidth, healthBarHeight);
-                    g.setColor(Color.RED); // 색상 초기화
-                }
-            }
-
-            // 유닛 체력바 표시 (Player Two - AI)
-            for (Creature creature : playerTwo.getCreatures()) {
-                if (creature != null && creature.getHealth() > 0) {
-                    int healthBarWidth = 50;
-                    int healthBarHeight = 5;
-                    int xOffset = (creature.getWidth() - healthBarWidth) / 2;
-                    int yOffset = -10;
-
-                    // 체력바 배경
-                    g.fillRect(creature.getPosition().x + xOffset, creature.getPosition().y + yOffset, healthBarWidth, healthBarHeight);
-
-                    // 체력바 현재 체력
-                    g.setColor(Color.GREEN);
-                    int currentHealthBarWidth = (int) ((double) creature.getHealth() / creature.getMaxHealth() * healthBarWidth);
-                    g.fillRect(creature.getPosition().x + xOffset, creature.getPosition().y + yOffset, currentHealthBarWidth, healthBarHeight);
-                    g.setColor(Color.RED); // 색상 초기화
-                }
-            }
-
-            // UI 업데이트
+            // Draw menu items and UI
             for (int i = 0; i < NUM_CC_INFO; i++) {
                 g.drawImage(this.menuItems[i], LEFT_FIRST_ICON_POS.x, LEFT_FIRST_ICON_POS.y + (i * 2 * ICON_SEPARATOR), null);
+                g.drawImage(this.menuItems[i], RIGHT_FIRST_ICON_POS.x, RIGHT_FIRST_ICON_POS.y + (i * 2 * ICON_SEPARATOR), null);
             }
+
+            g.setColor(Color.RED);
+            g.setFont(new Font("Tahoma", Font.BOLD, 15));
 
             for (int j = 0; j < NUM_CC_ICONS; j++) {
                 g.drawImage(this.creatureCreationIcons[j][playerOne.getCurrentEvolution()],
                         LEFT_FIRST_CC_POS.x + (j * 2 * ICON_WIDTH), LEFT_FIRST_CC_POS.y, null);
+                g.drawImage(this.creatureCreationIcons[j][playerTwo.getCurrentEvolution()],
+                        RIGHT_FIRST_CC_POS.x + (j * 2 * ICON_WIDTH), RIGHT_FIRST_CC_POS.y, null);
             }
 
-            // 체력바 및 상태 표시
+            for (int i = 0; i < MAX_TURRET_SPOTS; i++) {
+                g.setFont(new Font("Tahoma", Font.BOLD, 20));
+                g.setColor(Color.black);
+                g.drawString(LEFT_TURRET_KEYS[i], LEFT_TURRET_POS[i].x, LEFT_TURRET_POS[i].y);
+                g.drawString(RIGHT_TURRET_KEYS[i], RIGHT_TURRET_POS[i].x, RIGHT_TURRET_POS[i].y);
+            }
+
             g.drawImage(this.menuItems[HEALTH], playerOne.getTower().getPosition().x - 30,
                     playerOne.getTower().getPosition().y - 30, null);
             g.drawImage(this.menuItems[HEALTH], playerTwo.getTower().getPosition().x + 113,
@@ -337,14 +310,11 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
             } else {
                 g.drawImage(this.menuItems[VOLUME_OFF], 642, SCREEN_HEIGHT - 69, null);
             }
-
         } else {
             g.setFont(new Font("Tahoma", Font.BOLD, 100));
             g.drawString("PAUSED", SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2);
         }
     }
-
-
 
     public void playMusic() {
         if (music.isRunning()) {
