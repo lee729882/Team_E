@@ -6,5 +6,6 @@ public enum SkillType {
     DAMAGE,    // 데미지 스킬
     SLOW,      // 힐 스킬
     EXECUTE,   // 처형 스킬
-    RANDOM     // 랜덤 스킬
+    RANDOM,     // 랜덤 스킬
+    TIME_WARP  // 시간 왜곡 스킬 
 }

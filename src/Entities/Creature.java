@@ -39,7 +39,7 @@ public class Creature extends Destructible {
     private boolean isSlowed = false;
     private double originalSpeed;    // 원래 속도 저장
     private long slowEndTime = 0;    // 슬로우 효과 종료 시간
-    
+    private boolean isSpeedModified = false;
     
 
     public Creature(int teamSide, int type, int evolution, BufferedImage[] move, BufferedImage[] attack) {
@@ -99,6 +99,24 @@ public class Creature extends Destructible {
                            ", Health: " + this.getHealth() + "/" + this.getMaxHealth());
     }
     
+    //속도 증가 효과 적용
+ 
+   public void applySpeedBoost(double boostPercentage, long duration) {
+       if (isSpeedModified) return;
+       isSpeedModified = true;
+       originalSpeed = this.speed;
+       this.speed = (int) (this.speed * (1.0 + boostPercentage));
+       System.out.println("Speed boosted by " + (boostPercentage * 100) + "% for " + duration + "ms.");
+   }
+
+   //원래속도로 복원
+   public void restoreOriginalSpeed() {
+	    if (!isSpeedModified) return;
+	    this.speed = (int) originalSpeed;
+	    isSpeedModified = false;
+	    System.out.println("Speed restored to original value.");
+	} 
+   
     public void applySlow(double slowPercentage, long duration) {
         if (isSlowed) return;
 
