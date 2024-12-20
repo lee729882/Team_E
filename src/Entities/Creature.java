@@ -97,25 +97,7 @@ public class Creature extends Destructible {
         // 디버깅: 유닛 초기화 정보 출력
         System.out.println("Creating unit at position: " + this.getPosition() +
                            ", Health: " + this.getHealth() + "/" + this.getMaxHealth());
-    }
-    
-    //속도 증가 효과 적용
- 
-   public void applySpeedBoost(double boostPercentage, long duration) {
-       if (isSpeedModified) return;
-       isSpeedModified = true;
-       originalSpeed = this.speed;
-       this.speed = (int) (this.speed * (1.0 + boostPercentage));
-       System.out.println("Speed boosted by " + (boostPercentage * 100) + "% for " + duration + "ms.");
-   }
-
-   //원래속도로 복원
-   public void restoreOriginalSpeed() {
-	    if (!isSpeedModified) return;
-	    this.speed = (int) originalSpeed;
-	    isSpeedModified = false;
-	    System.out.println("Speed restored to original value.");
-	} 
+    }  
    
     public void applySlow(double slowPercentage, long duration) {
         if (isSlowed) return;

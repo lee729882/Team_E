@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.awt.CardLayout;
 import Core.SkillType;
 import Core.SlowSkill;
-import Core.TimeWarpSkill;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -198,11 +197,6 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
                 break;
             case RANDOM:
                 new Skill("랜덤", SkillType.RANDOM).activate(playerOne, playerTwo);
-                break;
-            case TIME_WARP:
-                TimeWarpSkill timeWarpSkill = new TimeWarpSkill("Time Warp", 0.3, 0.5, 5000); // 아군 30% 증가, 적 50% 감소
-                timeWarpSkill.activate(playerOne, playerTwo);
-                System.out.println("Time Warp skill activated.");
                 break;
         }
     }

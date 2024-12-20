@@ -42,11 +42,6 @@ public class Skill {
             case RANDOM:
                 activateRandomSkill(player, opponent); // 랜덤 스킬 발동
                 break;
-            case TIME_WARP:
-                System.out.println("Time Warp is a specialized skill. Please use the TimeWarpSkill class.");
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown skill type: " + type);
         }
     }
 
