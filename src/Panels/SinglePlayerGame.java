@@ -8,6 +8,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.awt.CardLayout;
 import Core.SkillType;
+import Core.SlowSkill;
+
 import java.awt.Color;
 import java.awt.Font;
 import javax.sound.sampled.*;
@@ -183,8 +185,10 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
                 firestorm.activate(playerOne, playerTwo); // 플레이어 1이 상대 플레이어에게 사용
                 System.out.println("Damage skill 'Firestorm' activated.");
                 break;
-            case HEAL:
-                playerOne.healAllCreatures();
+            case SLOW:
+                SlowSkill slowSkill = new SlowSkill("Icy Blast", 0.5, 5000); // 50% 감소, 5초 지속
+                slowSkill.activate(playerOne, playerTwo);
+                System.out.println("Slow skill activated.");
                 break;
             case EXECUTE:
                 ExecuteSkill executeSkill = new ExecuteSkill("Execute", SkillType.EXECUTE, 1.0); // 성공 확률 100%

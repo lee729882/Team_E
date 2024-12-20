@@ -33,7 +33,7 @@ public class Skill {
             case DAMAGE:
                 opponent.damageAllCreaturesByPercentage(0.1); // 체력 10% 데미지
                 break;
-            case HEAL:
+            case SLOW:
                 player.getCreatures(); // 아군 유닛 체력 완전 회복
                 break;
             case EXECUTE:
@@ -47,7 +47,7 @@ public class Skill {
 
     private void activateRandomSkill(Player player, Player opponent) {
         Random random = new Random();
-        SkillType[] randomSkills = {SkillType.WALL, SkillType.STUN, SkillType.DAMAGE, SkillType.HEAL, SkillType.EXECUTE};
+        SkillType[] randomSkills = {SkillType.WALL, SkillType.STUN, SkillType.DAMAGE, SkillType.SLOW, SkillType.EXECUTE};
         SkillType randomSkill = randomSkills[random.nextInt(randomSkills.length)];
         new Skill(randomSkill.name(), randomSkill).activate(player, opponent);
     }

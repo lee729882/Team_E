@@ -36,6 +36,10 @@ public class Creature extends Destructible {
     private boolean isStunned = false; // 유닛이 스턴 상태인지 여부
     private long stunEndTime = 0;      // 스턴 상태가 종료되는 시간 (밀리초)
     private List<StatusEffect> statusEffects = new ArrayList<>();
+    private boolean isSlowed = false;
+    private double originalSpeed;    // 원래 속도 저장
+    private long slowEndTime = 0;    // 슬로우 효과 종료 시간
+    
     
 
     public Creature(int teamSide, int type, int evolution, BufferedImage[] move, BufferedImage[] attack) {
@@ -93,6 +97,25 @@ public class Creature extends Destructible {
         // 디버깅: 유닛 초기화 정보 출력
         System.out.println("Creating unit at position: " + this.getPosition() +
                            ", Health: " + this.getHealth() + "/" + this.getMaxHealth());
+    }
+    
+    public void applySlow(double slowPercentage, long duration) {
+        if (isSlowed) return;
+
+        isSlowed = true;
+        originalSpeed = this.speed;
+        this.speed = (int) (this.speed * (1.0 - slowPercentage)); // double 값을 int로 변환
+        slowEndTime = System.currentTimeMillis() + duration;
+
+        System.out.println("Creature slowed by " + (slowPercentage * 100) + "% for " + duration + "ms.");
+    }
+    
+    public void updateSlowState() {
+        if (isSlowed && System.currentTimeMillis() > slowEndTime) {
+            isSlowed = false;
+            this.speed = (int) originalSpeed; // double -> int 변환
+            System.out.println("Slow effect expired for creature.");
+        }
     }
     
     public void applyStun(long duration) {
