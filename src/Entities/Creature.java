@@ -4,8 +4,15 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import Core.StatusEffect;
 
+import Core.StunEffect;
 import Core.Hitbox;
 
 public class Creature extends Destructible {
@@ -25,6 +32,11 @@ public class Creature extends Destructible {
     private int currentMoveIndex;
     private int currentAttackIndex;
     private boolean idling = false;
+    private StunEffect stunEffect; // 스턴 효과를 관리하는 객체
+    private boolean isStunned = false; // 유닛이 스턴 상태인지 여부
+    private long stunEndTime = 0;      // 스턴 상태가 종료되는 시간 (밀리초)
+    private List<StatusEffect> statusEffects = new ArrayList<>();
+    
 
     public Creature(int teamSide, int type, int evolution, BufferedImage[] move, BufferedImage[] attack) {
         super(teamSide, type, evolution);
@@ -32,6 +44,8 @@ public class Creature extends Destructible {
         this.attackSprites = attack;
         this.currentSprite = this.moveSprites[INITIAL_SPRITE_INDEX];
         this.currentMoveIndex = INITIAL_SPRITE_INDEX;
+        this.stunEffect = new StunEffect(); // 스턴 효과 초기화
+        
         int range = 0;
 
         switch (type) {
@@ -80,8 +94,39 @@ public class Creature extends Destructible {
         System.out.println("Creating unit at position: " + this.getPosition() +
                            ", Health: " + this.getHealth() + "/" + this.getMaxHealth());
     }
+    
+    public void applyStun(long duration) {
+        this.isStunned = true;
+        this.stunEndTime = System.currentTimeMillis() + duration; // 현재 시간에 지속 시간 추가
+
+        System.out.println("Stun applied to creature for " + duration + " ms");
+    }
+    
+    
+    // 스턴 상태 업데이트 메서드
+    public void updateStunState() {
+        if (isStunned && System.currentTimeMillis() > stunEndTime) {
+            this.isStunned = false; // 스턴 상태 해제
+            System.out.println("Stun expired for creature: " + this);
+        }
+    }
+    
+    // 스턴 상태 여부 확인
+    public boolean isStunned() {
+        return isStunned;
+    }
+    
+    public void setStunned(boolean stunned) {
+        this.isStunned = stunned;
+    }
+    
 
     public void attack(Destructible target) {
+        if (isStunned()) {
+            System.out.println("Creature is stunned and cannot attack.");
+            return; // 스턴 상태에서는 공격하지 않음
+        }
+        
         if (target != null && !target.isDestroyed()) {
             // 공격 모션 시작
             if (this.currentActivity != ATTACK_ACTIVITY) {
@@ -115,6 +160,11 @@ public class Creature extends Destructible {
 
 
     public void move() {
+        if (isStunned()) {
+            System.out.println("Creature is stunned and cannot move.");
+            return; // 스턴 상태에서는 이동하지 않음
+        }
+        
         Point previousPosition = new Point(this.getPosition());
 
         if (this.currentMoveIndex == LAST_MOVE_SPRITE) {
@@ -216,6 +266,26 @@ public class Creature extends Destructible {
         System.out.println("Target: " + (this.getCurrentTarget() != null ? this.getCurrentTarget().getPosition() : "None"));
     }
 
+    public void applyStatusEffect(String type, long duration) {
+        statusEffects.add(new StatusEffect(type, duration));
+        if (type.equals("stun")) {
+            this.isStunned = true;
+        }
+    }
+
+    public void updateStatusEffects() {
+        Iterator<StatusEffect> iterator = statusEffects.iterator();
+        while (iterator.hasNext()) {
+            StatusEffect effect = iterator.next();
+            if (effect.isExpired()) {
+                if (effect.getType().equals("stun")) {
+                    this.isStunned = false;
+                }
+                iterator.remove();
+            }
+        }
+    }
+    
     public int getDamage() {
         return this.damage;
     }

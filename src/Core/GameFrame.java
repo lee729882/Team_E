@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import Panels.LoginPanel;
 import Panels.MenuPanel;
@@ -12,10 +13,11 @@ import Panels.RulesPanel;
 import Panels.SinglePlayerDifficultyPanel;
 import Panels.PlayPanel;
 import Panels.SinglePlayerGame;
+import Panels.SkillSelectionPanel;
 
 public class GameFrame extends JFrame implements GameConstants {
 
-    JPanel cardsPanel, modeSelectionPanel, loginPanel, menuPanel, rulesPanel, playPanel, overPanel, singlePlayerGame, singlePlayerDifficultyPanel;
+    JPanel cardsPanel, modeSelectionPanel, loginPanel, menuPanel, rulesPanel, playPanel, overPanel, singlePlayerGame, singlePlayerDifficultyPanel, skillSelectionPanel;
 
     public GameFrame() {
         // set up frame
@@ -27,9 +29,13 @@ public class GameFrame extends JFrame implements GameConstants {
         setFocusable(false);
 
         // set a custom cursor
-        setCursor(Toolkit.getDefaultToolkit().createCustomCursor(
-                new ImageIcon(this.getClass().getResource("../Assets/cursor" + PNG_EXT)).getImage(), new Point(0, 0),
-                "custom cursor"));
+        try {
+            setCursor(Toolkit.getDefaultToolkit().createCustomCursor(
+                    new ImageIcon(this.getClass().getResource("../Assets/cursor" + PNG_EXT)).getImage(), new Point(0, 0),
+                    "custom cursor"));
+        } catch (Exception e) {
+            System.out.println("Custom cursor not found: " + e.getMessage());
+        }
 
         cardsPanel = new JPanel(new CardLayout());
         modeSelectionPanel = new ModeSelectionPanel();
@@ -38,15 +44,26 @@ public class GameFrame extends JFrame implements GameConstants {
         rulesPanel = new RulesPanel();
         playPanel = new PlayPanel(); // PlayPanel 인스턴스 추가
         singlePlayerGame = new SinglePlayerGame();
-        singlePlayerDifficultyPanel = new SinglePlayerDifficultyPanel(new DifficultyButtonListener()); // 수정된 부분
+        singlePlayerDifficultyPanel = new SinglePlayerDifficultyPanel(new DifficultyButtonListener());
+        skillSelectionPanel = new SkillSelectionPanel(e -> {
+            System.out.println("Skill selection confirmed.");
+            ArrayList<SkillType> selectedSkills = ((SkillSelectionPanel) skillSelectionPanel).getSelectedSkills();
+            System.out.println("Selected skills: " + selectedSkills);
+            ((SinglePlayerGame) singlePlayerGame).setSelectedSkills(selectedSkills);
+            CardLayout cl = (CardLayout) cardsPanel.getLayout();
+            cl.show(cardsPanel, "single_player");
+            System.out.println("Switched to single_player panel.");
+            ((SinglePlayerGame) singlePlayerGame).runGame(); // 게임 실행 호출
+        });
 
         cardsPanel.add(modeSelectionPanel, "mode_selection");
         cardsPanel.add(loginPanel, "login");
         cardsPanel.add(menuPanel, "menu");
         cardsPanel.add(rulesPanel, "rules");
-        cardsPanel.add(singlePlayerGame, "single_player"); // SinglePlayerGame 추가
-        cardsPanel.add(singlePlayerDifficultyPanel, "single_player_difficulty"); // SinglePlayerDifficultyPanel 추가
-        cardsPanel.add(playPanel, "multi_player"); // PlayPanel 추가
+        cardsPanel.add(singlePlayerGame, "single_player");
+        cardsPanel.add(singlePlayerDifficultyPanel, "single_player_difficulty");
+        cardsPanel.add(playPanel, "multi_player");
+        cardsPanel.add(skillSelectionPanel, "skill_selection");
 
         add(cardsPanel);
         setVisible(true);
@@ -55,13 +72,14 @@ public class GameFrame extends JFrame implements GameConstants {
         ((ModeSelectionPanel) modeSelectionPanel).getSinglePlayerButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                System.out.println("Single player button clicked.");
                 CardLayout cl = (CardLayout) cardsPanel.getLayout();
                 if (playPanel instanceof PlayPanel) {
-                    ((PlayPanel) playPanel).stopPlayingMusic(); // 이전 음악 중지
+                    ((PlayPanel) playPanel).stopPlayingMusic();
                 }
-                cl.show(cardsPanel, "single_player_difficulty"); // 'single_player_difficulty'로 이동
+                cl.show(cardsPanel, "single_player_difficulty");
+                System.out.println("Switched to single_player_difficulty panel.");
 
-                // 싱글 플레이 난이도 선택 패널에 포커스를 설정하여 키 리스너가 작동하도록 함
                 singlePlayerDifficultyPanel.setFocusable(true);
                 singlePlayerDifficultyPanel.requestFocusInWindow();
             }
@@ -71,27 +89,27 @@ public class GameFrame extends JFrame implements GameConstants {
         ((ModeSelectionPanel) modeSelectionPanel).getMultiplayerButton().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                System.out.println("Multiplayer button clicked.");
                 CardLayout cl = (CardLayout) cardsPanel.getLayout();
-                ((PlayPanel) playPanel).stopPlayingMusic(); // 이전 음악 중지
-                cl.show(cardsPanel, "login"); // 로그인 화면으로 이동
-                
-                // 로그인 완료 후 PlayPanel로 이동하는 로직
+                ((PlayPanel) playPanel).stopPlayingMusic();
+                cl.show(cardsPanel, "login");
+                System.out.println("Switched to login panel.");
+
                 ((LoginPanel) loginPanel).getOKButton().addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        // 플레이어 이름 설정
+                        System.out.println("Login OK button clicked.");
                         ((PlayPanel) playPanel).setPlayerNames(
                                 ((LoginPanel) loginPanel).getFirstPlayerName(),
                                 ((LoginPanel) loginPanel).getSecondPlayerName()
                         );
 
-                        // 게임 화면으로 전환
                         cl.show(cardsPanel, "multi_player");
-                        ((PlayPanel) playPanel).runGame(); // 인자 없이 runGame() 호출
+                        ((PlayPanel) playPanel).runGame();
 
-                        // 멀티 플레이 패널에 포커스를 설정하여 키 리스너가 작동하도록 함
                         playPanel.setFocusable(true);
                         playPanel.requestFocusInWindow();
+                        System.out.println("Switched to multi_player panel.");
                     }
                 });
             }
@@ -102,24 +120,22 @@ public class GameFrame extends JFrame implements GameConstants {
         return this.cardsPanel;
     }
 
- // DifficultyButtonListener 수정
     private class DifficultyButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            String difficulty = e.getActionCommand(); // 버튼의 actionCommand로 난이도 가져옴
+            System.out.println("Difficulty Selected: " + e.getActionCommand());
+            String difficulty = e.getActionCommand();
             CardLayout cl = (CardLayout) cardsPanel.getLayout();
 
-            // SinglePlayerGame의 난이도 설정
             ((SinglePlayerGame) singlePlayerGame).setDifficulty(difficulty);
-            
-            // SinglePlayerGame 화면으로 전환
-            cl.show(cardsPanel, "single_player");
 
-            // 게임 실행
-            ((SinglePlayerGame) singlePlayerGame).runGame();
+            System.out.println("Switching to Skill Selection Panel...");
+            cl.show(cardsPanel, "skill_selection");
+            skillSelectionPanel.repaint();
+            skillSelectionPanel.revalidate();
+            skillSelectionPanel.setFocusable(true);
+            SwingUtilities.invokeLater(() -> skillSelectionPanel.requestFocusInWindow());
+            System.out.println("Skill Selection Panel displayed.");
         }
     }
-
 }
-
-

@@ -20,6 +20,7 @@ import Core.GameKeyListener;
 import Entities.Creature;
 import Entities.EnemyAI;
 import Entities.Player;
+import Entities.Player;
 
 public class PlayPanel extends JPanel implements GameConstants, EntityConstants {
 
@@ -33,6 +34,7 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
     private CardLayout cardLayout;
     private String firstName, secondName;
     private boolean gamePaused = false;
+    
 
     // image arrays
     private BufferedImage[][][] leftMove = new BufferedImage[NUM_DIFFERENT_CREATURES][NUM_EVOLUTIONS][NUM_MOVE_SPRITES];
@@ -57,14 +59,15 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
         this.setFocusable(true);
         this.requestFocusInWindow();
         importImages();
+        
         try {
             background = ImageIO.read(this.getClass().getResource(BACKGROUND_PATH + "Game.jpg"));
         } catch (Exception e) {
+            System.out.println("Error loading background image: " + e.getMessage());
         }
 
         if (music == null) {
             try {
-                // 음악 객체를 처음 초기화할 때만 설정합니다.
                 audioStream = AudioSystem.getAudioInputStream(this.getClass().getResource("../Assets/backgroundMusic.wav"));
                 music = AudioSystem.getClip();
                 music.open(audioStream);

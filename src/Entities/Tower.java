@@ -73,4 +73,9 @@ public class Tower extends Destructible {
         return turrets;
     }
 
+	public void addTemporaryWall() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

@@ -1,29 +1,39 @@
 package Panels;
-
+import Core.Skill;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.awt.CardLayout;
+import Core.SkillType;
 import java.awt.Color;
 import java.awt.Font;
 import javax.sound.sampled.*;
 import javax.imageio.ImageIO;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-
+import Core.Skill;
+import Core.SkillType;
+import Core.DamageSkill;
 import Core.EntityConstants;
+import Core.ExecuteSkill;
 import Core.GameConstants;
 import Core.GameFrame;
 import Core.GameKeyListener;
 import Entities.Creature;
 import Entities.EnemyAI;
 import Entities.Player;
+import Entities.Projectile;
+import Entities.Wall;
 
 public class SinglePlayerGame extends JPanel implements GameConstants, EntityConstants {
 
-    private Player playerOne;
+    private static final int UPDATE_DELAY = 0;
+	private Player playerOne;
     private Player playerTwo;
     private EnemyAI enemyAI;
     private BufferedImage background;
@@ -59,6 +69,8 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
     private double enemyAIDifficultyFactor;
     
     private GameKeyListener keyListener;
+    private JButton skill1Button;
+    private JButton skill2Button;
 
     public SinglePlayerGame() {
         setLayout(null);
@@ -101,7 +113,103 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
             }
         }
     }
+    
+    private ArrayList<SkillType> selectedSkills; // 선택된 스킬 저장
+    private JButton skillButton1, skillButton2;
 
+    public void setSelectedSkills(ArrayList<SkillType> selectedSkills) {
+        if (selectedSkills == null || selectedSkills.size() != 2) {
+            System.out.println("Skill selection is invalid or not set.");
+            return;
+        }
+
+        this.selectedSkills = selectedSkills;
+        System.out.println("Skills set for player: " + selectedSkills);
+
+        // 스킬 버튼 추가
+        addSkillButtons();
+        repaint();
+    }
+    
+    private void addSkillButtons() {
+        // selectedSkills 방어 코드
+        if (selectedSkills == null || selectedSkills.size() != 2) {
+            System.out.println("Skill selection is invalid or not set.");
+            return;
+        }
+
+        // 기존 버튼 제거
+        if (skillButton1 != null) remove(skillButton1);
+        if (skillButton2 != null) remove(skillButton2);
+
+        try {
+            skillButton1 = new JButton(selectedSkills.get(0).name());
+            skillButton2 = new JButton(selectedSkills.get(1).name());
+
+            skillButton1.setBounds(100, SCREEN_HEIGHT - 100, 150, 50);
+            skillButton2.setBounds(300, SCREEN_HEIGHT - 100, 150, 50);
+
+            skillButton1.addActionListener(e -> activateSkill(selectedSkills.get(0)));
+            skillButton2.addActionListener(e -> activateSkill(selectedSkills.get(1)));
+
+            add(skillButton1);
+            add(skillButton2);
+
+            revalidate();
+            repaint();
+
+            System.out.println("Skill buttons added: " + selectedSkills.get(0) + ", " + selectedSkills.get(1));
+        } catch (Exception e) {
+            System.out.println("Error adding skill buttons: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void activateSkill(SkillType skill) {
+        switch (skill) {
+        	case WALL:
+        		Point wallPosition = new Point(400, 400); // 벽 생성 위치
+        		playerOne.addWall(wallPosition); // 벽 생성
+        		System.out.println("Wall added at position: " + wallPosition);
+        		repaint();
+        		break;
+            case STUN:
+                playerTwo.stunAllCreatures(3000); // 3초 동안 스턴 적용
+                System.out.println("Stun skill activated.");
+                break;
+            case DAMAGE:
+                // 데미지 스킬 생성 및 사용
+                DamageSkill firestorm = new DamageSkill("Firestorm", SkillType.DAMAGE, 0.1);
+                firestorm.activate(playerOne, playerTwo); // 플레이어 1이 상대 플레이어에게 사용
+                System.out.println("Damage skill 'Firestorm' activated.");
+                break;
+            case HEAL:
+                playerOne.healAllCreatures();
+                break;
+            case EXECUTE:
+                ExecuteSkill executeSkill = new ExecuteSkill("Execute", SkillType.EXECUTE, 1.0); // 성공 확률 100%
+                executeSkill.activate(playerOne, playerTwo);
+                System.out.println("Execute skill activated.");
+                break;
+            case RANDOM:
+                new Skill("랜덤", SkillType.RANDOM).activate(playerOne, playerTwo);
+                break;
+        }
+    }
+    
+    public void setPlayerSkills(ArrayList<Skill> selectedSkills) {
+        skill1Button = new JButton(selectedSkills.get(0).getName());
+        skill2Button = new JButton(selectedSkills.get(1).getName());
+
+        skill1Button.addActionListener(e -> selectedSkills.get(0).activate(playerOne, playerTwo));
+        skill2Button.addActionListener(e -> selectedSkills.get(1).activate(playerOne, playerTwo));
+
+        add(skill1Button);
+        add(skill2Button);
+
+        skill1Button.setBounds(100, SCREEN_HEIGHT - 100, 150, 50);
+        skill2Button.setBounds(300, SCREEN_HEIGHT - 100, 150, 50);
+    }
 
     
     public void setDifficulty(String difficulty) {
@@ -138,6 +246,7 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
     }
 
     public void runGame() {
+    	System.out.println("Game loop started.");
         playMusic();
 
         gameFrame = (GameFrame) SwingUtilities.getWindowAncestor(this);
@@ -147,33 +256,50 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
         final Timer paintTimer = new Timer(PAINT_DELAY, new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
+            	 System.out.println("Paint timer tick...");
                 repaint();
             }
         });
         paintTimer.start();
 
         final Timer summonTimer = new Timer(SUMMON_DELAY, new ActionListener() {
-            @Override
+           
+        	@Override
             public void actionPerformed(final ActionEvent e) {
+                System.out.println("Summon timer tick...");
                 if (!playerOne.getSummonQueue().isEmpty() && !getGamePaused()) {
                     playerOne.summonCreature();
+                    System.out.println("Player 1 summoned a creature.");
                 }
                 if (!gamePaused) {
                     enemyAI.automate(playerOne);
+                    System.out.println("AI automated action completed.");
                 }
             }
         });
         summonTimer.start();
 
         final Timer goldTimer = new Timer(GOLD_DELAY, new ActionListener() {
+        	
             @Override
             public void actionPerformed(final ActionEvent e) {
+            	System.out.println("Gold timer tick...");
                 if (!gamePaused) {
                     playerOne.gainGold();
                     playerTwo.gainGold();
+                    System.out.println("Gold updated for both players.");
                 }
             }
         });
+        
+        Timer updateTimer = new Timer(UPDATE_DELAY, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                playerOne.updateCreatures(); // 플레이어 1 유닛 상태 업데이트
+                playerTwo.updateCreatures(); // 플레이어 2 유닛 상태 업데이트
+            }
+        });
+        updateTimer.start();
         goldTimer.start();
     }
 
@@ -231,6 +357,17 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
+        System.out.println("paintComponent called.");
+        
+        // 충돌 확인
+        playerOne.checkWallCollisions();
+        
+        // 스킬 버튼 위치 확인
+        if (skillButton1 != null && skillButton2 != null) {
+            System.out.println("Skill button 1 location: " + skillButton1.getBounds());
+            System.out.println("Skill button 2 location: " + skillButton2.getBounds());
+        }
+    
         // 포커스가 없으면 다시 요청
         if (!isFocusOwner()) {
             requestFocusInWindow();
@@ -242,7 +379,6 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
             // 플레이어와 AI 자동화 처리
             playerOne.automate(playerTwo);
             enemyAI.automate(playerOne); // AI 유닛 동작 및 이동 처리
-
             // 게임 종료 확인
             gameOverSecond = playerTwo.checkGameOver();
             if (gameOverSecond) {
@@ -266,7 +402,7 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
             // 유닛 및 AI의 움직임 반영
             playerOne.draw(g); // 플레이어 유닛 그리기
             playerTwo.draw(g); // AI 유닛도 움직인 후 그리기
-
+            
             // Draw menu items and UI
             for (int i = 0; i < NUM_CC_INFO; i++) {
                 g.drawImage(this.menuItems[i], LEFT_FIRST_ICON_POS.x, LEFT_FIRST_ICON_POS.y + (i * 2 * ICON_SEPARATOR), null);
@@ -281,6 +417,25 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
                         LEFT_FIRST_CC_POS.x + (j * 2 * ICON_WIDTH), LEFT_FIRST_CC_POS.y, null);
                 g.drawImage(this.creatureCreationIcons[j][playerTwo.getCurrentEvolution()],
                         RIGHT_FIRST_CC_POS.x + (j * 2 * ICON_WIDTH), RIGHT_FIRST_CC_POS.y, null);
+            }
+            // 플레이어의 벽 그리기
+            if (playerOne != null) {
+                playerOne.drawWalls(g);
+            }
+            
+            // 적 투사체와 플레이어의 벽 충돌 처리
+            Projectile[] projectilesArray = playerTwo.getProjectiles().toArray(new Projectile[0]);
+            for (int i = 0; i < projectilesArray.length; i++) {
+                Projectile projectile = projectilesArray[i];
+                if (projectile != null) { // Null 체크
+                    for (Wall wall : playerOne.getWalls()) {
+                        if (projectile.checkCollideWithWall(wall) && wall.isActive()) {
+                            projectilesArray[i] = null; // 배열에서 투사체 제거
+                            System.out.println("Projectile collided with wall and was removed.");
+                            break;
+                        }
+                    }
+                }
             }
 
             for (int i = 0; i < MAX_TURRET_SPOTS; i++) {

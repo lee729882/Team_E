@@ -1,6 +1,7 @@
 package Entities;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 import Core.EntityConstants;
@@ -43,6 +44,14 @@ public class Projectile implements GameConstants, EntityConstants {
         return this.hitbox.checkCollide(enemy.getHitbox());
     }
 
+ // 새로운 벽과의 충돌 확인 메서드
+    public boolean checkCollideWithWall(Wall wall) {
+        // 벽의 히트박스와 투사체의 히트박스가 충돌하는지 확인
+        return this.hitbox.getBoundingBox().intersects(
+            new Rectangle(wall.getPosition().x, wall.getPosition().y, wall.getWidth(), wall.getHeight())
+        );
+    }
+    
     public void draw(Graphics g) {
         g.drawImage(this.currentSprite, this.position.x, this.position.y, null);
     }

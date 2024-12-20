@@ -137,3 +137,4 @@ public class SinglePlayerDifficultyPanel extends JPanel implements GameConstants
         return hardButton;
     }
 }
+

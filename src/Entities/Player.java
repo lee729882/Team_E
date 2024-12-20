@@ -1,13 +1,20 @@
 package Entities;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import Core.EntityConstants;
 import Core.GameConstants;
-
+import Core.Hitbox;
+import Core.SkillType;
+import Entities.Wall;
 import java.awt.Font;
 
 public class Player implements GameConstants, EntityConstants {
@@ -18,15 +25,26 @@ public class Player implements GameConstants, EntityConstants {
 	private Queue<Creature> summonQueue = new LinkedList<Creature>();
 	private String userName;
 	private double gold;
+    private Point position;
+    private int width;
+    private int height;
+    private long duration;
+    private boolean active;
+    private Hitbox hitbox;
+    
 
 	private int currentEvolution = 0;
 	private int evolutionCost;
+	private ArrayList<Projectile> projectiles; // 투사체 리스트 필드 추가
+	private ArrayList<Wall> walls; // 벽을 관리할 리스트
+	
 
 	private BufferedImage[][][] moveSprites;
 	private BufferedImage[][][] attackSprites;
 	private BufferedImage[][] projectileSprites;
 	private BufferedImage[] towerSprites;
 	private BufferedImage[] turretSprites;
+
 
 	public Player(int team, String name, BufferedImage[][][] move, BufferedImage[][][] attack,
 			BufferedImage[][] projectiles, BufferedImage[] tower, BufferedImage[] turret) {
@@ -42,9 +60,41 @@ public class Player implements GameConstants, EntityConstants {
 		this.tower = new Tower(team, TOWER_TYPE, this.currentEvolution, this.towerSprites, this.turretSprites,
 				projectileSprites[TURRET_PROJECTILES]);
 		this.currentEvolution = STARTING_EVOLUTION;
+		this.projectiles = new ArrayList<>(); // 초기화
+		this.position = new Point(0, 0); // 초기 위치
+		this.width = 50; // 기본 너비
+		this.height = 100; // 기본 높이
+		this.duration = 5000; // 기본 지속 시간
+
+        this.active = true;
+        this.hitbox = new Hitbox(position, width, height);
+        this.walls = new ArrayList<>(); // 벽 리스트 초기화
+        
+        // 벽 지속 시간 타이머
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                deactivate(); // 벽 비활성화
+            }
+        }, duration);
 	}
 
-
+    public void deactivate() {
+        active = false;
+        System.out.println("Wall deactivated at position: " + position);
+    }
+    
+    public Point getPosition() {
+        return position;
+    }
+    public Hitbox getHitbox() {
+        return this.hitbox;
+    }
+    
+    public boolean isActive() {
+        return active;
+    }
+    
 	public void queueCreature(int cost, int type) {
 	    if (this.summonQueue.size() < MAX_CREATURES_IN_QUEUE) {
 	        // 골드 소모 성공 시에만 유닛 소환
@@ -369,6 +419,81 @@ public class Player implements GameConstants, EntityConstants {
 			}
 		}
 	}
+	
+    public void addProjectile(Projectile projectile) {
+        if (projectile != null) {
+            projectiles.add(projectile);
+        }
+    }
+	
+    // 벽 추가
+    public void addWall(Point position) {
+        if (position == null) {
+            position = new Point(200, 200); // 기본값 설정
+        }
+        Wall newWall = new Wall(position, 50, 200, 5000); // 크기: 50x100, 지속 시간: 5초
+        walls.add(newWall);
+    }
+    
+    // 벽을 그리는 메서드
+    public void drawWalls(Graphics g) {
+        walls.removeIf(wall -> !wall.isActive()); // 비활성화된 벽 제거
+        for (Wall wall : walls) {
+            wall.draw(g);
+        }
+    }
+
+    // 플레이어가 관리하는 모든 벽 반환
+    public ArrayList<Wall> getWalls() {
+        return walls;
+    }
+    
+    // 벽 충돌 체크 (적 투사체와의 충돌 처리)
+    public void checkWallCollisions() {
+        for (Wall wall : walls) {
+            if (!wall.isActive()) continue;
+            // 충돌 로직 추가 (투사체 등과의 충돌 처리)
+        }
+    }
+    
+    public void stunAllCreatures(long duration) {
+        for (Creature creature : creatures) {
+            creature.applyStun(duration); // 각 유닛에 스턴 적용
+        }
+        System.out.println("All creatures stunned for " + duration + "ms");
+    
+    }
+    
+    // 모든 유닛의 스턴 상태 업데이트
+    public void updateCreatures() {
+        for (Creature creature : creatures) {
+            creature.updateStatusEffects(); // 상태 효과 업데이트
+            creature.updateStunState(); // 기존 스턴 업데이트
+            if (creature.isStunned()) {
+                System.out.println("Creature is stunned: " + creature);
+            } else {
+                System.out.println("Creature is active: " + creature);
+            }
+        }
+    }
+    
+    public void damageAllCreaturesByPercentage(double percentage) {
+        for (Creature creature : this.creatures) {
+            int damage = (int) (creature.getHealth() * percentage);
+            creature.takeDamage(damage);
+            System.out.println("Dealt " + damage + " damage to creature: " + creature);
+        }
+    }
+    
+    public void executeRandomCreature() {
+        if (!creatures.isEmpty()) {
+            Creature target = creatures.remove(new Random().nextInt(creatures.size()));
+            System.out.println("Executed creature: " + target + ". Remaining creatures: " + creatures.size());
+        } else {
+            System.out.println("No creatures available for execution.");
+        }
+    }
+    
 
 	// ---------------------------------------
 	public Tower getTower() {
@@ -400,6 +525,30 @@ public class Player implements GameConstants, EntityConstants {
 	public int getEvolutionCost() {
 		return evolutionCost;
 	}
+
+																																																																								
+	public void stunAllCreatures(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public ArrayList<Projectile> getProjectiles() {
+	    if (this.projectiles == null) {
+	        return new ArrayList<>(); // null 대신 빈 리스트 반환
+	    }
+	    return this.projectiles;
+	}
+
+
+
+
+	public void healAllCreatures() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
 	
 
 }
