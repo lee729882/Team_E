@@ -4,7 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import Entities.Player;
-
+//ㅁㄴㅇㅁㄴㅇ
 public class RegenerationSkill extends Skill {
     private int healAmount; // 매초 회복량
     private long duration; // 지속 시간
