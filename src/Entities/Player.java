@@ -16,7 +16,8 @@ import Core.Hitbox;
 import Core.SkillType;
 import Entities.Wall;
 import java.awt.Font;
-
+import java.util.Timer;
+import java.util.TimerTask;
 public class Player implements GameConstants, EntityConstants {
 
 	private Tower tower;
@@ -499,6 +500,25 @@ public class Player implements GameConstants, EntityConstants {
     }
     
 
+    //
+    // 정신 나갈것 같애
+    // 공격력 증가
+    public void boostAttackOfAllCreatures(double boostPercentage, long duration) {
+        for (Creature creature : this.creatures) {
+            creature.boostAttack(boostPercentage, duration);
+        }
+        System.out.println("All creatures' attack boosted by " + (boostPercentage * 100) + "% for " + duration + "ms.");
+    }
+
+    //적 속도 감소 
+    public void applySlowToAllCreatures(double slowPercentage, long duration) {
+        for (Creature creature : this.creatures) {
+            creature.applySlow(slowPercentage, duration);
+        }
+        System.out.println("All enemy creatures slowed by " + (slowPercentage * 100) + "% for " + duration + "ms.");
+    }
+
+    
 	// ---------------------------------------
 	public Tower getTower() {
 		return this.tower;
@@ -562,6 +582,19 @@ public class Player implements GameConstants, EntityConstants {
 	        System.out.println("Tower healed for " + healAmount + " HP. Current health: " + tower.getHealth() + "/" + tower.getMaxHealth());
 	    }
 	}
+	
+	
+	// 아군 이동속도 증가
+	public void applySpeedBoostToAllCreatures(double boostPercentage, long duration) {
+	    for (Creature creature : creatures) {
+	        if (!creature.isDestroyed()) {
+	            creature.applySpeedBoost(boostPercentage, duration);
+	        }
+	    }
+	    System.out.println("All creatures boosted speed by " + (boostPercentage * 100) + "% for " + duration + "ms.");
+	}
+
+	
 	
 	public void healAllCreatures() {
 		// TODO Auto-generated method stub

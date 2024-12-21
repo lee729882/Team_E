@@ -50,6 +50,7 @@ public class Creature extends Destructible {
         this.currentMoveIndex = INITIAL_SPRITE_INDEX;
         this.stunEffect = new StunEffect(); // 스턴 효과 초기화
         
+        
         int range = 0;
 
         switch (type) {
@@ -99,22 +100,7 @@ public class Creature extends Destructible {
                            ", Health: " + this.getHealth() + "/" + this.getMaxHealth());
     }  
 
-     //속도 증가 효과 적용
-    public void applySpeedBoost(double boostPercentage, long duration) {
-        if (isSpeedModified) return;
-        isSpeedModified = true;
-        originalSpeed = this.speed;
-        this.speed = (int) (this.speed * (1.0 + boostPercentage));
-        System.out.println("Speed boosted by " + (boostPercentage * 100) + "% for " + duration + "ms.");
-    }
 
-     // 원래 속도로 복원
-    public void restoreOriginalSpeed() {
-        if (!isSpeedModified) return;
-        this.speed = (int) originalSpeed;
-        isSpeedModified = false;
-        System.out.println("Speed restored to original value.");
-    }
     
     public void applySlow(double slowPercentage, long duration) {
         if (isSlowed) return;
@@ -331,6 +317,46 @@ public class Creature extends Destructible {
         this.health = Math.min(this.health + amount, this.maxHealth);
         System.out.println("Creature recovered health: " + amount + ". Current health: " + this.health);
     }
+    
+    //이동속도 증가
+    public void applySpeedBoost(double boostPercentage, long duration) {
+        if (isSpeedModified) return;
+        isSpeedModified = true;
+        originalSpeed = this.speed;
+        this.speed = (int) (this.speed * (1.0 + boostPercentage));
+        System.out.println("Speed boosted by " + (boostPercentage * 100) + "% for " + duration + "ms.");
+
+        // 지속 시간 이후 원래 속도로 복원
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                restoreOriginalSpeed();
+            }
+        }, duration);
+    }
+
+    public void restoreOriginalSpeed() {
+        if (!isSpeedModified) return;
+        this.speed = (int) originalSpeed;
+        isSpeedModified = false;
+        System.out.println("Speed restored to original value.");
+    }
+
+    //공격력 증가
+    public void boostAttack(double boostPercentage, long duration) {
+        int originalDamage = this.damage;
+        this.damage *= (1.0 + boostPercentage);
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                damage = originalDamage;
+                System.out.println("Attack restored to original value.");
+            }
+        }, duration);
+    }
+
+    
     
     public int getDamage() {
         return this.damage;

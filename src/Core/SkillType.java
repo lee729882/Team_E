@@ -14,5 +14,9 @@ public enum SkillType {
     TOWER_STRIKE, // 적 타워 공격 스킬
     DEMONIC_DICE, // 악마의 주사위 스킬
     HEAL, // 새로운 힐 스킬 추가
-    HEAL_TOWER // 새로운 타워 힐 스킬 추가
+    ATTACK_BOOST, //공격력 증가
+    HEAL_TOWER, // 새로운 타워 힐 스킬 추가
+    MASS_SLOW, //적 속도 감소
+    REGENERATION //아군 체력 점진적 회복
+  
 }
