@@ -477,7 +477,6 @@ public class Player implements GameConstants, EntityConstants {
             if (creature.isStunned()) {
                 System.out.println("Creature is stunned: " + creature);
             } else {
-                System.out.println("Creature is active: " + creature);
             }
         }
     }
