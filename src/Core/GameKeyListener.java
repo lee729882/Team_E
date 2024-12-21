@@ -38,15 +38,24 @@ public class GameKeyListener implements KeyListener, GameConstants, EntityConsta
         }
         switch (keyCode) {
             // Pause Game
-            case KeyEvent.VK_SPACE:
-                if (playPanel instanceof PlayPanel) {
-                    PlayPanel panel = (PlayPanel) playPanel;
-                    panel.setGamePaused(!panel.getGamePaused());
-                } else if (playPanel instanceof SinglePlayerGame) {
-                    SinglePlayerGame panel = (SinglePlayerGame) playPanel;
-                    panel.setGamePaused(!panel.getGamePaused());
-                }
-                break;
+	        case KeyEvent.VK_SPACE:
+	            if (playPanel instanceof PlayPanel) {
+	                PlayPanel panel = (PlayPanel) playPanel;
+	                panel.setGamePaused(!panel.getGamePaused());
+	                if (panel.getGamePaused()) {
+	                    panel.showSettingsMenu(); // 설정 메뉴 표시
+	                } else {
+	                    panel.hideSettingsMenu(); // 설정 메뉴 숨김
+	                }
+	            } else if (playPanel instanceof SinglePlayerGame) {
+	                SinglePlayerGame panel = (SinglePlayerGame) playPanel;
+	                panel.setGamePaused(!panel.getGamePaused());
+	                if (panel.getGamePaused()) {
+	                    panel.showSettingsMenu(); // 설정 메뉴 표시
+	                } else {
+	                    panel.hideSettingsMenu(); // 설정 메뉴 숨김
+	                }
+	            }
 
             // Volume on/off
             case KeyEvent.VK_G:

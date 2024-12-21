@@ -260,9 +260,9 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
             g.drawString(EVOLUTION, 400, 100);
             g.drawString(EVOLUTION, 700, 100);
 
-            g.drawString(PAUSE_STRING, 500, SCREEN_HEIGHT - 81);
-            g.drawImage(this.menuItems[PAUSE], 510, SCREEN_HEIGHT - 69, null);
-            g.drawString(VOLUME_STRING, 647, SCREEN_HEIGHT - 81);
+            //g.drawString(PAUSE_STRING, 500, SCREEN_HEIGHT - 81);
+            //g.drawImage(this.menuItems[PAUSE], 510, SCREEN_HEIGHT - 69, null);
+            //g.drawString(VOLUME_STRING, 647, SCREEN_HEIGHT - 81);
 
             if (this.playingMusic) {
                 g.drawImage(this.menuItems[VOLUME_ON], 642, SCREEN_HEIGHT - 69, null);
@@ -305,4 +305,12 @@ public class PlayPanel extends JPanel implements GameConstants, EntityConstants 
     public void setPlayingMusic(boolean set) {
         this.playingMusic = set;
     }
+	public void showSettingsMenu() {
+		// TODO Auto-generated method stub
+		
+	}
+	public void hideSettingsMenu() {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -46,6 +46,9 @@ public class Player implements GameConstants, EntityConstants {
 	private BufferedImage[] turretSprites;
 
 
+	public static final Point LEFT_SPAWN = new Point(100, 500);
+	public static final Point RIGHT_SPAWN = new Point(1100, 500);
+
 	public Player(int team, String name, BufferedImage[][][] move, BufferedImage[][][] attack,
 			BufferedImage[][] projectiles, BufferedImage[] tower, BufferedImage[] turret) {
 		this.teamSide = team;
@@ -108,7 +111,7 @@ public class Player implements GameConstants, EntityConstants {
 	    }
 	}
 
-    private Creature createCreature(int type) {
+    public Creature createCreature(int type) {
         BufferedImage projectileSprite = null;
         if (type == SECOND_TYPE) {
             projectileSprite = this.projectileSprites[SECOND_PROJECTILES][this.currentEvolution];
@@ -124,6 +127,8 @@ public class Player implements GameConstants, EntityConstants {
                     attackSprites[type][currentEvolution], projectileSprite);
         }
     }
+    
+    
 	public void summonCreature() {
 		this.creatures.add(this.summonQueue.poll());
 	}

@@ -1,37 +1,50 @@
 package Panels;
 import Core.Skill;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
+import java.awt.BasicStroke;
 import java.awt.CardLayout;
 import Core.SkillType;
 import Core.SlowSkill;
 import Core.TimeWarpSkill;
+import Core.TowerStrikeSkill;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GradientPaint;
+
 import javax.sound.sampled.*;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import Core.Skill;
 import Core.SkillType;
+import Core.AllKillSkill;
 import Core.DamageSkill;
+import Core.DemonicDiceSkill;
 import Core.EntityConstants;
 import Core.ExecuteSkill;
 import Core.GameConstants;
 import Core.GameFrame;
 import Core.GameKeyListener;
+import Core.GodsWrathSkill;
+import Core.MartialLawSkill;
 import Entities.Creature;
 import Entities.EnemyAI;
 import Entities.Player;
 import Entities.Projectile;
 import Entities.Wall;
+
 
 public class SinglePlayerGame extends JPanel implements GameConstants, EntityConstants {
 
@@ -49,6 +62,7 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
     private String firstName;
     private String secondName = "AI";
     private boolean gamePaused = false;
+    private JPanel settingsMenu;
 
     // image arrays
     private BufferedImage[][][] leftMove = new BufferedImage[NUM_DIFFERENT_CREATURES][NUM_EVOLUTIONS][NUM_MOVE_SPRITES];
@@ -75,6 +89,10 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
     private JButton skill1Button;
     private JButton skill2Button;
 
+    private DemonicDiceSkill demonicDiceSkill; // Demonic Dice 스킬 객체
+    private List<Creature> killedCreatures = new ArrayList<>(); // 즉사된 유닛 리스트
+
+    
     public SinglePlayerGame() {
         setLayout(null);
         setFocusable(true);
@@ -168,6 +186,12 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
         }
     }
 
+    //신의 격노 변수
+    private boolean skillEffectActive = false;
+    private GodsWrathSkill godsWrathSkill;
+    
+    private TowerStrikeSkill towerStrikeSkill; // 적 타워 공격 스킬 변수
+    
     private void activateSkill(SkillType skill) {
         switch (skill) {
         	case WALL:
@@ -204,6 +228,37 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
                 timeWarpSkill.activate(playerOne, playerTwo);
                 System.out.println("Time Warp skill activated.");
                 break;
+            //AllKill skill 
+            case ALL_KILL:
+                AllKillSkill allKillSkill = new AllKillSkill("All Kill", SkillType.ALL_KILL);
+                allKillSkill.activate(playerOne, playerTwo);
+                System.out.println("AllKill skill activated.");
+                break;
+            //신의 격노 스킬
+            case GODS_WRATH:
+                godsWrathSkill = new GodsWrathSkill("God's Wrath", SkillType.GODS_WRATH, 100); // 데미지 100
+                godsWrathSkill.activate(playerOne, playerTwo);
+                skillEffectActive = true;
+
+                // 효과가 일정 시간 후 비활성화되도록 타이머 설정
+                new javax.swing.Timer(1000, e -> skillEffectActive = false).start();
+                break;
+            
+            case TOWER_STRIKE:
+                towerStrikeSkill = new TowerStrikeSkill("Tower Strike", SkillType.TOWER_STRIKE, 100); // 데미지 100
+                towerStrikeSkill.activate(playerOne, playerTwo);
+                skillEffectActive = true;
+
+                // 레이저 효과를 일정 시간 후 제거
+                new javax.swing.Timer(1000, e -> skillEffectActive = false).start();
+                break;
+                
+            case DEMONIC_DICE: //악마의 주사위 -> 아군 적군 상관없이 3명 재거
+                DemonicDiceSkill demonicDiceSkill = new DemonicDiceSkill("Demonic Dice", SkillType.DEMONIC_DICE, 3); // 랜덤 3명 즉사
+                demonicDiceSkill.activate(playerOne, playerTwo);
+                break;
+
+
         }
     }
     
@@ -433,6 +488,22 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
                 playerOne.drawWalls(g);
             }
             
+            // 번개 효과 그리기 - 신의 격노
+         // "신의 격노" 스킬 효과 그리기
+            if (skillEffectActive && godsWrathSkill != null) {
+                godsWrathSkill.draw(g);
+            }
+            
+            if (skillEffectActive && towerStrikeSkill != null) {
+                towerStrikeSkill.draw(g);
+            }
+            
+            
+         // Demonic Dice 스킬 효과 그리기
+            if (demonicDiceSkill != null) {
+                demonicDiceSkill.draw(g, killedCreatures); // 선택된 유닛 그래픽 효과 표시
+            }
+            
             // 적 투사체와 플레이어의 벽 충돌 처리
             Projectile[] projectilesArray = playerTwo.getProjectiles().toArray(new Projectile[0]);
             for (int i = 0; i < projectilesArray.length; i++) {
@@ -475,12 +546,124 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
             } else {
                 g.drawImage(this.menuItems[VOLUME_OFF], 642, SCREEN_HEIGHT - 69, null);
             }
-        } else {
-            g.setFont(new Font("Tahoma", Font.BOLD, 100));
-            g.drawString("PAUSED", SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2);
+        } else { //디자인 수정 
+        	g.setFont(new Font("Tahoma", Font.BOLD, 100));
+
+        	// 텍스트를 화면 상단에 배치
+        	int x = SCREEN_WIDTH / 3; // 가로 위치
+        	int y = SCREEN_HEIGHT / 10; // 세로 위치
+
+        	// "PAUSED" 텍스트 그림자 효과
+        	Graphics2D g2d = (Graphics2D) g;
+        	g2d.setFont(new Font("Tahoma", Font.BOLD, 100));
+        	g2d.setColor(new Color(50, 50, 50, 180)); // 회색 그림자 (투명도 180)
+        	g2d.drawString("PAUSED", x + 5, y + 5); // 그림자를 약간 아래로 이동
+
+        	// "PAUSED" 텍스트 그라데이션 효과
+        	GradientPaint gradient = new GradientPaint(
+        	    x, y, Color.BLUE, // 텍스트 위쪽 색상
+        	    x, y + 50, Color.CYAN // 텍스트 아래쪽 색상
+        	);
+        	g2d.setPaint(gradient);
+        	g2d.drawString("PAUSED", x, y);
+
+        	// 텍스트 외곽선 효과
+        	//g2d.setStroke(new BasicStroke(2f)); // 외곽선 두께 설정
+        	//g2d.setColor(Color.BLACK); // 외곽선 색상
+        	//g2d.draw(new java.awt.geom.Rectangle2D.Double(x - 10, y - 70, 350, 110)); // 외곽선 박스 그리기
+
+        	// 추가적인 텍스트 아래 설명 추가
+        	g2d.setFont(new Font("Tahoma", Font.PLAIN, 40));
+        	g2d.setColor(Color.WHITE);
+        	String subText = "Press SPACE to Resume";
+        	g2d.drawString(subText, x - 20, y + 60);
+
         }
     }
+    
+    public void showSettingsMenu() {
+        // 설정 메뉴가 처음 생성되는 경우
+        if (settingsMenu == null) {
+            settingsMenu = new JPanel();
+            settingsMenu.setLayout(null); // 절대 레이아웃 사용
+            settingsMenu.setBounds(400, 150, 500, 400); // 설정 메뉴 위치 및 크기 설정
+            settingsMenu.setBackground(new Color(0, 0, 0, 200)); // 반투명한 검은 배경 추가
 
+            // "뒤로가기" 버튼 생성
+            JButton backButton = new JButton("뒤로가기"); // 버튼 텍스트 설정
+            backButton.setBounds(150, 50, 200, 50); // 버튼 위치 및 크기 설정
+            backButton.setFont(new Font("맑은 고딕", Font.BOLD, 18)); // 폰트 스타일 및 크기
+            backButton.setForeground(Color.WHITE); // 버튼 텍스트 색상
+            backButton.setBackground(new Color(34, 139, 34)); // 버튼 배경색
+            backButton.setFocusPainted(false); // 클릭 시 버튼 테두리 제거
+            backButton.addActionListener(e -> hideSettingsMenu()); // 클릭 이벤트: 설정 메뉴 숨기기
+            settingsMenu.add(backButton); // 설정 메뉴에 버튼 추가
+
+            // "메인 메뉴로 돌아가기" 버튼 생성
+            JButton mainMenuButton = new JButton("메인 메뉴로 돌아가기"); // 버튼 텍스트 설정
+            mainMenuButton.setBounds(150, 120, 200, 50); // 버튼 위치 및 크기 설정
+            mainMenuButton.setFont(new Font("맑은 고딕", Font.BOLD, 18)); // 폰트 스타일 및 크기
+            mainMenuButton.setForeground(Color.WHITE); // 버튼 텍스트 색상
+            mainMenuButton.setBackground(new Color(178, 34, 34)); // 버튼 배경색
+            mainMenuButton.setFocusPainted(false); // 클릭 시 버튼 테두리 제거
+            mainMenuButton.addActionListener(e -> {
+                System.out.println("메인 메뉴로 돌아갑니다."); // 로그 출력
+                if (gameFrame != null) { // GameFrame이 유효한 경우
+                    CardLayout layout = (CardLayout) gameFrame.getCardsPanel().getLayout(); // CardLayout 가져오기
+                    layout.show(gameFrame.getCardsPanel(), "menu"); // "menu" 패널로 전환
+                    stopPlayingMusic(); // 배경 음악 중지
+                }
+            });
+            settingsMenu.add(mainMenuButton); // 설정 메뉴에 버튼 추가
+
+            // 볼륨 조절 라벨 생성
+            JLabel volumeLabel = new JLabel("볼륨 조절"); // 라벨 텍스트 설정
+            volumeLabel.setBounds(180, 200, 150, 30); // 라벨 위치 및 크기 설정
+            volumeLabel.setFont(new Font("맑은 고딕", Font.BOLD, 16)); // 폰트 스타일 및 크기
+            volumeLabel.setForeground(Color.WHITE); // 라벨 텍스트 색상
+            settingsMenu.add(volumeLabel); // 설정 메뉴에 라벨 추가
+
+            // 볼륨 조절 슬라이더 생성
+            JSlider volumeSlider = new JSlider(0, 100, 50); // 최소값 0, 최대값 100, 기본값 50
+            volumeSlider.setBounds(100, 240, 300, 50); // 슬라이더 위치 및 크기 설정
+            volumeSlider.setMajorTickSpacing(25); // 주요 눈금 간격 설정
+            volumeSlider.setMinorTickSpacing(5); // 부 눈금 간격 설정
+            volumeSlider.setPaintTicks(true); // 눈금 표시 활성화
+            volumeSlider.setPaintLabels(true); // 눈금 라벨 표시 활성화
+            volumeSlider.addChangeListener(e -> { // 슬라이더 값 변경 이벤트
+                int volume = volumeSlider.getValue(); // 슬라이더 값 가져오기
+                setVolume(volume); // 음량 설정
+                System.out.println("Volume set to: " + volume); // 로그 출력
+            });
+            settingsMenu.add(volumeSlider); // 설정 메뉴에 슬라이더 추가
+
+            // 설정 메뉴를 현재 패널에 추가
+            this.add(settingsMenu);
+        }
+
+        // 게임을 일시 정지하고 설정 메뉴 표시
+        setGamePaused(true); // 게임 일시 정지
+        settingsMenu.setVisible(true); // 설정 메뉴 표시
+        this.repaint(); // 화면 갱신
+    }
+
+
+
+    public void hideSettingsMenu() {
+        if (settingsMenu != null) {
+            settingsMenu.setVisible(false);
+        }
+        setGamePaused(false); // 게임 재개
+        this.repaint();
+    }
+
+    public void draw(Graphics g, List<Creature> killedCreatures) {
+        g.setColor(Color.RED); // 빨간색 표시
+        for (Creature creature : killedCreatures) {
+            Point position = creature.getPosition();
+            g.fillOval(position.x - 10, position.y - 10, 20, 20); // 유닛 위에 붉은 원 표시
+        }
+    }
     public void playMusic() {
         if (music.isRunning()) {
             return;
@@ -510,4 +693,23 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
     public void setPlayingMusic(boolean set) {
         this.playingMusic = set;
     }
+    
+    /**
+     * 게임 배경 음악의 볼륨을 설정합니다.
+     *
+     * @param volume 사용자 입력 슬라이더 값 (0~100)
+     */
+    private void setVolume(int volume) {
+        if (music != null && music.isRunning()) { // 배경 음악이 실행 중인지 확인
+            try {
+                FloatControl gainControl = (FloatControl) music.getControl(FloatControl.Type.MASTER_GAIN); // 볼륨 제어 가져오기
+                float volumeRange = gainControl.getMaximum() - gainControl.getMinimum(); // 볼륨 범위 계산
+                float adjustedVolume = gainControl.getMinimum() + (volume / 100.0f) * volumeRange; // 입력 값을 범위에 맞게 조정
+                gainControl.setValue(adjustedVolume); // 볼륨 값 설정
+            } catch (IllegalArgumentException e) {
+                System.out.println("Volume control not supported: " + e.getMessage()); // 오류 로그 출력
+            }
+        }
+    }
+
 }
