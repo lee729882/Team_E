@@ -356,7 +356,11 @@ public class Creature extends Destructible {
         }, duration);
     }
 
-    
+    //적군 약화
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
     
     public int getDamage() {
         return this.damage;

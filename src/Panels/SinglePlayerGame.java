@@ -15,6 +15,7 @@ import Core.SlowSkill;
 
 import Core.TimeWarpSkill;
 import Core.TowerStrikeSkill;
+import Core.WeakenSkill;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -271,6 +272,14 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
                 HealTowerSkill healTowerSkill = new HealTowerSkill("Tower Repair", SkillType.HEAL_TOWER, 100); // 100 HP 회복
                 healTowerSkill.activate(playerOne, playerTwo);
                 break;
+                
+            //적군 약화
+            case WEAKEN:
+                WeakenSkill weakenSkill = new WeakenSkill("Weakening Curse", 0.3, 5000); // 30% 감소, 5초 지속
+                weakenSkill.activate(playerOne, playerTwo);
+                System.out.println("Weaken skill activated.");
+                break;
+
            
             
 
@@ -709,6 +718,7 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
     public void setPlayingMusic(boolean set) {
         this.playingMusic = set;
     }
+    
     
     /**
      * 게임 배경 음악의 볼륨을 설정합니다.

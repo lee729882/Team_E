@@ -17,6 +17,7 @@ public enum SkillType {
     ATTACK_BOOST, //공격력 증가
     HEAL_TOWER, // 새로운 타워 힐 스킬 추가
     MASS_SLOW, //적 속도 감소
-    REGENERATION //아군 체력 점진적 회복
+    REGENERATION, //아군 체력 점진적 회복
+    WEAKEN //적군 공격력 약화
   
 }
