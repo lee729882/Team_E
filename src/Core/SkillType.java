@@ -12,5 +12,7 @@ public enum SkillType {
     GODS_WRATH,//신의 격노 스킬 추가
     MARTIAL_LAW, //계엄령 스킬
     TOWER_STRIKE, // 적 타워 공격 스킬
-    DEMONIC_DICE // 악마의 주사위 스킬
+    DEMONIC_DICE, // 악마의 주사위 스킬
+    HEAL, // 새로운 힐 스킬 추가
+    HEAL_TOWER // 새로운 타워 힐 스킬 추가
 }

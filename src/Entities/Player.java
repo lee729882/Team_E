@@ -545,8 +545,24 @@ public class Player implements GameConstants, EntityConstants {
 	}
 
 
-
-
+// 체력 회복
+	public void healAllCreatures(double percentage) {
+	    for (Creature creature : this.creatures) {
+	        int healAmount = (int) (creature.getMaxHealth() * percentage);
+	        creature.recoverHealth(healAmount);
+	        System.out.println("Healed " + healAmount + " health for creature: " + creature);
+	    }
+	}
+	
+	// 아군 타워 체력 회복
+	public void healTower(int healAmount) {
+	    Tower tower = this.getTower();
+	    if (!tower.isDestroyed()) {
+	        tower.recoverHealth(healAmount);
+	        System.out.println("Tower healed for " + healAmount + " HP. Current health: " + tower.getHealth() + "/" + tower.getMaxHealth());
+	    }
+	}
+	
 	public void healAllCreatures() {
 		// TODO Auto-generated method stub
 		

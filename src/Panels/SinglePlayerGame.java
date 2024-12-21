@@ -38,6 +38,8 @@ import Core.GameConstants;
 import Core.GameFrame;
 import Core.GameKeyListener;
 import Core.GodsWrathSkill;
+import Core.HealSkill;
+import Core.HealTowerSkill;
 import Core.MartialLawSkill;
 import Entities.Creature;
 import Entities.EnemyAI;
@@ -257,6 +259,18 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
                 DemonicDiceSkill demonicDiceSkill = new DemonicDiceSkill("Demonic Dice", SkillType.DEMONIC_DICE, 3); // 랜덤 3명 즉사
                 demonicDiceSkill.activate(playerOne, playerTwo);
                 break;
+                
+            case HEAL:
+                HealSkill healSkill = new HealSkill("Healing Wave", SkillType.HEAL, 0.3); // 30% 체력 회복
+                healSkill.activate(playerOne, playerTwo);
+                System.out.println("Heal skill activated.");
+                break;
+                
+            case HEAL_TOWER:
+                HealTowerSkill healTowerSkill = new HealTowerSkill("Tower Repair", SkillType.HEAL_TOWER, 100); // 100 HP 회복
+                healTowerSkill.activate(playerOne, playerTwo);
+                break;
+           
 
 
         }

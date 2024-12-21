@@ -326,6 +326,12 @@ public class Creature extends Destructible {
         }
     }
     
+    //아군 체력 회복
+    public void recoverHealth(int amount) {
+        this.health = Math.min(this.health + amount, this.maxHealth);
+        System.out.println("Creature recovered health: " + amount + ". Current health: " + this.health);
+    }
+    
     public int getDamage() {
         return this.damage;
     }

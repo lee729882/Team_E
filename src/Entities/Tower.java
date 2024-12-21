@@ -61,6 +61,15 @@ public class Tower extends Destructible {
         }
     }
 
+    
+    //타워 체력 회봇
+    public void recoverHealth(int amount) {
+        if (!isDestroyed()) {
+            this.health = Math.min(this.health + amount, this.maxHealth);
+            System.out.println("Tower health restored to: " + this.health + "/" + this.maxHealth);
+        }
+    }
+    
     public BufferedImage getCurrentSprite() {
         return this.currentSprite;
     }

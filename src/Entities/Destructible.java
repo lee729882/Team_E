@@ -5,8 +5,8 @@ import Core.Hitbox;
 
 public abstract class Destructible extends Entity {
 
-    private int health;
-    private int maxHealth; // 최대 체력을 저장
+	protected int health;
+	protected int maxHealth;
     private Hitbox hitbox;
     private int width, height;
 
