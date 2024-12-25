@@ -635,7 +635,7 @@ public class SinglePlayerGame extends JPanel implements GameConstants, EntityCon
                 System.out.println("메인 메뉴로 돌아갑니다."); // 로그 출력
                 if (gameFrame != null) { // GameFrame이 유효한 경우
                     CardLayout layout = (CardLayout) gameFrame.getCardsPanel().getLayout(); // CardLayout 가져오기
-                    layout.show(gameFrame.getCardsPanel(), "menu"); // "menu" 패널로 전환
+                    layout.show(gameFrame.getCardsPanel(), "mode_selection"); // "menu" 패널로 전환
                     stopPlayingMusic(); // 배경 음악 중지
                 }
             });
