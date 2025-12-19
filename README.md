@@ -18,31 +18,9 @@
 
 ## 🛠 시스템 구조 (Class Architecture)
 
-**객체지향 설계(OOP)**를 통해 유닛과 건물의 공통 속성을 효율적으로 관리했습니다.
+<img width="575" height="365" alt="image" src="https://github.com/user-attachments/assets/4eadb387-0e67-4339-9de2-0cc0d60474ac" />
 
-```mermaid
-classDiagram
-    class Unit {
-        +int hp
-        +int attack
-        +move()
-        +attack()
-    }
-    class Player {
-        +upgrade()
-        +useSkill()
-    }
-    class Enemy {
-        +aiLogic()
-    }
-    class Building {
-        +produceUnit()
-    }
-    
-    Unit <|-- Player : Inheritance
-    Unit <|-- Enemy : Inheritance
-    Unit ..> Building : Interaction
-```
+
 <br/>
 
 ## 📌 주요 기능 (Key Features)
