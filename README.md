@@ -42,7 +42,7 @@ classDiagram
     Unit <|-- Player : Inheritance
     Unit <|-- Enemy : Inheritance
     Unit ..> Building : Interaction
-
+```
 <br/>
 
 ## 📌 주요 기능 (Key Features)
@@ -80,7 +80,7 @@ public void paint(Graphics g) {
     // 2. 완성된 이미지를 실제 화면에 출력
     g.drawImage(bufferImage, 0, 0, this);
 }
-
+```
 ### 2. 소켓 통신 동기화 (Multi-Threading)
 * **Issue:** 게임 상태 동기화와 채팅 메시지 전송이 동시에 이루어져야 해서 메인 스레드만으로는 처리 불가
 * **Solution:** 서버와 클라이언트 간의 데이터 송수신을 담당하는 별도의 **스레드(Thread)**를 생성하여 게임 로직과 통신 로직을 병렬 처리
